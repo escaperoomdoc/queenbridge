@@ -1,0 +1,9 @@
+.idea
+/.vscode
+/node_modules
+/temp
+/ssl
+package-lock.json
+.env
+./config.json
+/config.json
