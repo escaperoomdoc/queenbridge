@@ -1,6 +1,7 @@
 const http = require('http');
 const express = require("express");
 const cors = require('cors');
+const axios = require('axios');
 
 // init variables
 abonents = [];
@@ -28,10 +29,23 @@ for (room of queenRooms) {
 			console.log(`queen room ${room.host}:${room.port} disconnected`);
 		}		
 		if (event === 'data') {
-			content = JSON.stringify(data);
-			for (index in abonents) {
-				abonents[index].emit('queenroom', content);
-				console.log(`sent to ${index} : ${content}`);
+			if (data.attributes.type === 'event:http') {
+				// send a HTTP request
+				httpData = JSON.parse(data.content);
+				axios({
+					url: httpData.url,
+					method: httpData.method,
+					data: httpData.payload
+				 }).then(() => {
+				 })
+			}
+			else {
+				// send data to socket io abonents
+				content = JSON.stringify(data);
+				for (index in abonents) {
+					abonents[index].emit('queenroom', content);
+					console.log(`sent to ${index} : ${content}`);
+				}
 			}
 		}
 	});
@@ -65,6 +79,15 @@ io.on('connection', (socket)=> {
 });
 
 // RESTful API
+app.post('/api/test', async (req, res, next) => {
+	try {
+		var text = JSON.stringify(req.body);
+		res.status(200).send('OK');
+	}
+	catch(err) {
+		if (err) return res.sendStatus(400, 'catch', err);
+	}
+})
 app.post('/api/send/:id', async (req, res, next) => {
 	try {
 		if (req.body.payload) {
