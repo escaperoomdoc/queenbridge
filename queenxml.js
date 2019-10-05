@@ -2,21 +2,24 @@
 const xmlparse = require('xml-parser');
 const net = require('net');
 
-function QueenClient(host, port, fn) {
+function QueenClient(host, port, callback) {
 	this.client = new net.Socket();
+	this.connected = false;
+	var that = this;
 	// queen room connect event
 	this.client.on('connect', () => {
 		console.log(`TCP connected to queen room ${host}:${port}`);
 		this.client.write("setname gameserver\n");
 		this.client.write("subscribe\n");
+		that.connected = true;
+		callback('connect');
 	})
 	// queen room receive event
 	this.client.on('data', function(chunk) {
 		try {
 			var str = chunk.toString('utf8');
 			var obj = xmlparse(str).root;
-			delete obj.children;
-			fn(obj);
+			callback('data', obj);
 			/*
 			content = JSON.stringify(obj.root);
 			for (index in abonents) {
@@ -42,8 +45,14 @@ function QueenClient(host, port, fn) {
 		}
 	});
 	// queen room disconnect or connect failure event
-   this.client.on('close', function() {
-		setTimeout(() => this.client.connect({ port: port, host: host }), 1000);
+	this.client.on('close', function() {
+		if (that.connected) {
+			that.connected = false;
+			callback('disconnect');
+		}
+		setTimeout(() => {
+			that.client.connect({ port: port, host: host })
+		}, 1000);
 	});
 	this.client.on('error', (err) => {
 		//	console.log('TCP error : ' + err.stack)

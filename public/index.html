@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"/>
+	<title>Queen Xml Test</title>
+	<script type="text/javascript" src="js/socket.io.dev.js"></script>
+</head>
+<body style='overflow: hidden'>
+	<form action="/login" method="post">
+		<div>
+		<label id="connectStatus" style="color: red">server disconnected</label>
+		<br/><br/>
+		</div>
+		<div>
+		<label>command</label>
+		<input type="text" size=40 name="" id="commandText"/>
+		<button onclick="commandExecute();return false">execute</button>
+		<br/><br/>
+		</div>
+		<div>
+		<label>events</label>
+		<br/><br/>
+		<textarea id="logger" cols="80" rows="10"></textarea>
+		</div>
+	</form>	
+	<script>
+		// init GUI objects
+		connectStatus = document.getElementById("connectStatus");
+		commandText = document.getElementById("commandText");
+		logger = document.getElementById("logger");
+		// init qwio object		
+		var socket = io.connect(location.host);
+		socket.on("connect", function() {
+			connectStatus.style.color = 'green';
+			connectStatus.innerHTML = 'server connected';
+			console.log('server connected');
+		});
+		socket.on("disconnect", function() {
+			connectStatus.style.color = 'red';
+			connectStatus.innerHTML = 'server disconnected';
+			console.log('server disconnected');
+		});
+		socket.on('queenroom', function(data) {
+			logger.value += data;
+		});
+		// button slots
+		function commandExecute() {
+			socket.emit('queenroom', commandText.value);
+		}
+	</script>	
+</body>
+</html>
