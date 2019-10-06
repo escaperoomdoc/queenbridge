@@ -88,7 +88,7 @@ app.post('/api/test', async (req, res, next) => {
 		if (err) return res.sendStatus(400, 'catch', err);
 	}
 })
-app.post('/api/send/:id', async (req, res, next) => {
+app.post('/api/rooms/:id', async (req, res, next) => {
 	try {
 		if (req.body.payload) {
 			for (room of queenRooms) {
