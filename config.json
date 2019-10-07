@@ -2,6 +2,18 @@
 	"nodes": [{
 		"id": "room1",
 		"type": "queenroom",
-		"host": "
-	}]
+		"host": "127.0.0.1",
+		"port": 4444
+	}, {
+		"id": "room2",
+		"type": "queenroom",
+		"host": "127.0.0.1",
+		"port": 4445
+	}, {
+		"id": "business",
+		"type": "socketio",
+		"host": "127.0.0.1",
+		"port": 4445
+	}
+]
 }
