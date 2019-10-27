@@ -2,9 +2,7 @@ const http = require('http');
 const express = require("express");
 const cors = require('cors');
 const axios = require('axios');
-
-// init variables
-abonents = [];
+const config = require('./config.json');
 var httpPort = 80;
 
 // init app, HTTP server and static recourses
@@ -15,13 +13,18 @@ app.use(express.static('public'));
 var httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => console.log("HTTP listening on port " + httpPort));
 
-queenRooms = [{id: '1', host: '127.0.0.1', port: 4444}, {id: '2', host: '127.0.0.1', port: 4445}];
-
 // queen client
 var queenxml = require('./queenxml');
 
-for (room of queenRooms) {
-	room.client = new queenxml.QueenClient(room.host, room.port, (event, data) => {
+// init variables
+abonents = [];
+for (room of config.queen_room) {
+	abonents.push({
+		type: "queen_room",
+		config: room
+	});
+	abon = abonents[abonents.length-1];
+	abon.room = new queenxml.QueenClient(room.host, room.port, (event, data) => {
 		if (event === 'connect') {
 			console.log(`queen room ${room.host}:${room.port} connected`);
 		}		
