@@ -5,7 +5,7 @@
 		"port": 4444,
 		"subscribe": true
 	}, {
-		"id1": "room2",
+		"id": "room2",
 		"host": "127.0.0.1",
 		"port": 4445
 	}]

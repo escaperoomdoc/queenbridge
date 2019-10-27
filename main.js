@@ -43,12 +43,14 @@ for (room of config.queen_room) {
 				 })
 			}
 			else {
+				/*
 				// send data to socket io abonents
 				content = JSON.stringify(data);
 				for (index in abonents) {
 					abonents[index].emit('queenroom', content);
 					console.log(`sent to ${index} : ${content}`);
 				}
+				*/
 			}
 		}
 	});

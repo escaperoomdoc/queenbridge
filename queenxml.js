@@ -5,12 +5,14 @@ const net = require('net');
 function QueenClient(host, port, callback) {
 	this.client = new net.Socket();
 	this.connected = false;
+	this.stream = "";
 	var that = this;
 	// queen room connect event
 	this.client.on('connect', () => {
 		console.log(`TCP connected to queen room ${host}:${port}`);
-		this.client.write("setname gameserver\n");
-		this.client.write("subscribe\n");
+		that.client.write("setname queenbridge\n");
+		that.client.write("subscribe\n");
+		that.client.write("getstates\n");
 		that.connected = true;
 		callback('connect');
 	})
@@ -18,29 +20,46 @@ function QueenClient(host, port, callback) {
 	this.client.on('data', function(chunk) {
 		try {
 			var str = chunk.toString('utf8');
-			var obj = xmlparse(str).root;
-			callback('data', obj);
-			/*
-			content = JSON.stringify(obj.root);
-			for (index in abonents) {
-				abonents[index].emit('queenroom', content);
-				console.log(`sent to ${index} : ${content}`);
-			}
-			*/
-			/*
-			if (content[0] === '@') {
-				arr = content.split("@");
-				if (arr.length !== 3) throw "wrong reminder format";
-				for (abon of abons) {
-					if (arr[1] === abon.name) {
-						abon.socket.emit('server2client', `{"command":"${arr[2]}"}`);
-						console.log(`sent to ${arr[1]} : ${arr[2]}`);
+			that.stream = "asdfasdfasdfasd"
+			that.stream += str;
+			that.stream += "asdfasdfasdfasd"
+			while(true) {
+				var begin = that.stream.indexOf('<response');
+				if (begin < 0) break;
+				var end = that.stream.indexOf('</response>');
+				if (end < 0) break;
+				end += 11;
+				var response = that.stream.slice(begin, end);
+				var obj = xmlparse(response).root;
+								
+				if (obj.attributes) {
+					if (obj.attributes.type === 'connected') {
+						
 					}
-				}
+					else
+					if (obj.attributes.type === 'event:trigger' || obj.attributes.type === 'getstates') {
+						items = obj.content.split(",");
+						for (item of items) {
+							console.log(item);
+						}
+					}
+				}				
+
+				that.stream = that.stream.substr(end - that.stream.length);
+
 			}
+			/*
+			
+			console.log(str);
+			console.log("<<<DELAY>>>");
+			
+			if(0)
+
+			callback('data', obj);
 			*/
 		}
 		catch(error) {
+			that.stream = "";
 			console.log('receive error : ' + error);
 		}
 	});
