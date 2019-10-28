@@ -12,6 +12,7 @@ function QueenClient(host, port, callback) {
 		console.log(`TCP connected to queen room ${host}:${port}`);
 		that.client.write("setname queenbridge\n");
 		that.client.write("subscribe\n");
+		that.client.write("getscripts\n");
 		that.client.write("getstates\n");
 		that.connected = true;
 		callback('connect');
@@ -20,9 +21,7 @@ function QueenClient(host, port, callback) {
 	this.client.on('data', function(chunk) {
 		try {
 			var str = chunk.toString('utf8');
-			that.stream = "asdfasdfasdfasd"
 			that.stream += str;
-			that.stream += "asdfasdfasdfasd"
 			while(true) {
 				var begin = that.stream.indexOf('<response');
 				if (begin < 0) break;
@@ -33,15 +32,15 @@ function QueenClient(host, port, callback) {
 				var obj = xmlparse(response).root;
 								
 				if (obj.attributes) {
-					if (obj.attributes.type === 'connected') {
-						
+					if (obj.attributes.type === 'connected') {						
+					}
+					else
+					if (obj.attributes.type === 'getscripts') {
 					}
 					else
 					if (obj.attributes.type === 'event:trigger' || obj.attributes.type === 'getstates') {
-						items = obj.content.split(",");
-						for (item of items) {
-							console.log(item);
-						}
+						content = JSON.parse(obj.content);
+						console.log(content);
 					}
 				}				
 
