@@ -3,6 +3,9 @@ const express = require("express");
 const cors = require('cors');
 const axios = require('axios');
 const config = require('./config.json');
+const abonents = require('./abonents');
+var queenxml = require('./queenxml');
+
 var httpPort = 80;
 
 // init app, HTTP server and static recourses
@@ -13,40 +16,45 @@ app.use(express.static('public'));
 var httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => console.log("HTTP listening on port " + httpPort));
 
-// queen client
-var queenxml = require('./queenxml');
+// init abonents class
+app.queenbridge = {};
+app.queenbridge.config = config;
+app.queenbridge.abonents = new abonents.Abonents(app);
 
-app.abonents = [];
-
-// init static abonents
-abonents = app.abonents;
-for (room of config.queen_room) {
-	abonents.push({
-		type: "queen_room",
-		config: room
-	});
-	abon = abonents[abonents.length-1];
-	abon.room = new queenxml.QueenClient(room.host, room.port, (event, data) => {
-		if (event === 'connect') {
-			console.log(`queen room ${room.host}:${room.port} connected`);
+// init queen abonents (static creation)
+for (cfg of config.queen_room) {
+	app.queenbridge.abonents.register({
+		type: "queen",
+		id: cfg.id,
+		config: cfg
+	}, (error, abon) => {
+		if (error) {
+			console.log('error on abonent this.register : ' + error);
+			return;
 		}
-		else
-		if (event === 'disconnect') {
-			console.log(`queen room ${room.host}:${room.port} disconnected`);
-		}
-		else
-		if (event === 'http') {
-			// send a HTTP request
-			axios({
-				url: data.url,
-				method: data.method,
-				data: data.payload
-			 }).then(() => {
-			 })
-		}
-		else
-		if (event === 'abonent') {
-		}
+		abon.room = new queenxml.QueenClient(abon.config, (event, data) => {
+			abon.room.owner = abon;
+			if (event === 'connect') {
+				console.log(`queen room ${data.host}:${data.port} connected`);
+			}
+			else
+			if (event === 'disconnect') {
+				console.log(`queen room ${data.host}:${data.port} disconnected`);
+			}
+			else
+			if (event === 'http') {
+				// send a HTTP request
+				axios({
+					url: data.url,
+					method: data.method,
+					data: data.payload
+				 }).then(() => {
+				 })
+			}
+			else
+			if (event === 'abonent') {
+			}
+		});
 	});
 }
 

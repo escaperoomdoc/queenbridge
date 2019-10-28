@@ -2,8 +2,9 @@
 const xmlparse = require('xml-parser');
 const net = require('net');
 
-function QueenClient(host, port, callback) {
+function QueenClient(config, callback) {
 	this.client = new net.Socket();
+	this.config = config;
 	this.connected = false;
 	this.stream = "";
 	this.scripts = {};
@@ -12,9 +13,8 @@ function QueenClient(host, port, callback) {
 	var that = this;
 	// queen room connect event
 	this.client.on('connect', () => {
-		console.log(`TCP connected to queen room ${host}:${port}`);
 		that.connected = true;
-		callback('connect');
+		callback('connect', that.config);
 	})
 	// queen room receive event
 	this.client.on('data', function(chunk) {
@@ -149,16 +149,16 @@ function QueenClient(host, port, callback) {
 	this.client.on('close', function() {
 		if (that.connected) {
 			that.connected = false;
-			callback('disconnect');
+			callback('disconnect', that.config);
 		}
 		setTimeout(() => {
-			that.client.connect({ port: port, host: host })
+			that.client.connect({ port: that.config.port, host: that.config.host })
 		}, 1000);
 	});
 	this.client.on('error', (err) => {
 		//	console.log('TCP error : ' + err.stack)
 	});
-	this.client.connect({ port: port, host: host });
+	this.client.connect({ port: that.config.port, host: that.config.host });
 	// send function
 	this.send = function(data) {
 		this.client.write(data+"\n");
