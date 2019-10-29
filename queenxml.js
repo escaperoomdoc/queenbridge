@@ -1,10 +1,11 @@
 
 const xmlparse = require('xml-parser');
 const net = require('net');
+const axios = require('axios');
 
-function QueenClient(config, callback) {
+function QueenClient(abon) {
 	this.client = new net.Socket();
-	this.config = config;
+	this.abon = abon;
 	this.connected = false;
 	this.stream = "";
 	this.scripts = {};
@@ -14,7 +15,7 @@ function QueenClient(config, callback) {
 	// queen room connect event
 	this.client.on('connect', () => {
 		that.connected = true;
-		callback('connect', that.config);
+		console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} connected`);
 	})
 	// queen room receive event
 	this.client.on('data', function(chunk) {
@@ -123,14 +124,20 @@ function QueenClient(config, callback) {
 					if (obj.attributes.type === "event:json") {
 						json = JSON.parse(obj.content);
 						if (json.type === 'abonent') {
-
+							
 						} else
 						if (json.type === 'http') {
-							var data = {};
-							data.url = json.url;
-							data.method = json.method;
-							data.payload = json.payload;
-							callback('http', data);
+							axios({
+								url: json.url,
+								method: json.method,
+								data: json.payload,
+								timeout: 3000
+							}).then((response) => {
+								console.log(response);
+							}).catch((error) => {
+								throw error.message;
+							}).finally(() => {
+							});
 						}
 					}
 				}
@@ -149,16 +156,16 @@ function QueenClient(config, callback) {
 	this.client.on('close', function() {
 		if (that.connected) {
 			that.connected = false;
-			callback('disconnect', that.config);
+			console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} disconnected`);
 		}
 		setTimeout(() => {
-			that.client.connect({ port: that.config.port, host: that.config.host })
+			that.client.connect({ port: that.abon.config.port, host: that.abon.config.host })
 		}, 1000);
 	});
 	this.client.on('error', (err) => {
 		//	console.log('TCP error : ' + err.stack)
 	});
-	this.client.connect({ port: that.config.port, host: that.config.host });
+	this.client.connect({ port: that.abon.config.port, host: that.abon.config.host });
 	// send function
 	this.send = function(data) {
 		this.client.write(data+"\n");

@@ -5,7 +5,6 @@ const axios = require('axios');
 const config = require('./config.json');
 const abonents = require('./abonents');
 var queenxml = require('./queenxml');
-
 var httpPort = 80;
 
 // init app, HTTP server and static recourses
@@ -32,37 +31,13 @@ for (cfg of config.queen_room) {
 			console.log('error on abonent this.register : ' + error);
 			return;
 		}
-		abon.room = new queenxml.QueenClient(abon.config, (event, data) => {
-			abon.room.owner = abon;
-			if (event === 'connect') {
-				console.log(`queen room ${data.host}:${data.port} connected`);
-			}
-			else
-			if (event === 'disconnect') {
-				console.log(`queen room ${data.host}:${data.port} disconnected`);
-			}
-			else
-			if (event === 'http') {
-				// send a HTTP request
-				axios({
-					url: data.url,
-					method: data.method,
-					data: data.payload
-				 }).then(() => {
-				 })
-			}
-			else
-			if (event === 'abonent') {
-			}
-		});
+		abon.room = new queenxml.QueenClient(abon);
 	});
 }
 
-// http api
+// init http api
 const httpapi = require('./httpapi');
 httpapi(app);
-
-
 
 // socket.io
 const io = require('socket.io').listen(httpServer);

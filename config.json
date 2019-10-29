@@ -1,4 +1,8 @@
 {
+	"settings": {
+		"requireMessageId": true,
+		"queueSizeLimit": 1024
+	},
 	"queen_room": [{
 		"id": "room1",
 		"host": "127.0.0.1",

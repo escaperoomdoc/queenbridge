@@ -1,48 +1,71 @@
 
 module.exports = (app) => {
-	app.post('*', async (req, res, next) => {
-		return next();
+	app.get('/api/ping', async (req, res, next) => {
+		res.status(200).json();
 	})
+	app.get('/api/abonents', async (req, res, next) => {
+		try {
+			app.queenbridge.abonents.getlist((error, data) => {
+				if (error) throw error;
+				res.status(200).json({abonents: data});
+			});			
+		}
+		catch(error) {
+			return res.status(400).json({error: 'get /api/abonents: ' + error});
+		}
+	})	
 	app.post('/api/register', async (req, res, next) => {
 		try {
-			//app.abonents[0].room.send("set out.out_1.state on");
-			res.status(200).send('OK');
+			req.body.type = "http";
+			app.queenbridge.abonents.register(req.body, (error, abon) => {
+				if (error) throw error;
+				res.status(200).json({id:abon.id});
+			});			
 		}
-		catch(err) {
-			if (err) return res.sendStatus(400, 'catch', err);
-		}
-	})
-	app.post('/api/rooms/:id', async (req, res, next) => {
-		try {
-			if (req.body.payload) {
-				for (room of queenRooms) {
-					if (req.params.id === '*' || req.params.id === room.id) {
-						room.client.send(req.body.payload)
-					}
-				}
-			}
-			res.status(200).send('OK');
-		}
-		catch(err) {
-			if (err) return res.sendStatus(400, 'catch', err);
+		catch(error) {
+			return res.status(400).json({error: 'post /api/register: ' + error});
 		}
 	})
-	app.get('/api/rooms', async (req, res, next) => {
+	app.post('/api/unregister', async (req, res, next) => {
 		try {
-			result = {};
-			result.rooms = [];
-			for (room of queenRooms) {
-				result.rooms.push({
-					host: room.host,
-					port: room.port,
-					connect: room.client.connected
-				});
-			}
-			res.status(200).json(result);
+			app.queenbridge.abonents.unregister(req.body, (error) => {
+				if (error) throw error;
+				res.status(200).json();
+			});			
 		}
-		catch(err) {
-			if (err) return res.sendStatus(400, 'catch', err);
+		catch(error) {
+			return res.status(400).json({error: 'post /api/unregister: ' + error});
 		}
+	})
+	app.post('/api/send', async (req, res, next) => {
+		try {
+			app.queenbridge.abonents.send(req.body, (error, report) => {
+				if (error) throw error;
+				res.status(200).json(report);
+			});			
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/send: ' + error});
+		}
+	})
+	app.get('/api/receive/:id', async (req, res, next) => {
+		try {
+			var params = {
+				id: req.params.id,
+				ack: false,
+				max: req.query.max ? parseInt(req.query.max) : null
+			};			
+			app.queenbridge.abonents.receive(params, (error, result) => {
+				if (error) throw error;
+				res.status(200).json(result);
+			});			
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/receive: ' + error});
+		}
+	})	
+	app.all('*', async (req, res, next) => {
+		res.status(400).json({error: 'not implemented yet'});
 	})
 }
 
