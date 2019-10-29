@@ -60,8 +60,9 @@ function Abonents(app) {
 			abon.type = data.type;
 			abon.id = data.id ? data.id : uuid();
 			abon.queue = [];
+			abon.status = "passive";
 			this.abonents.push(abon);
-			abon.owner = this.abonents;
+			abon.owner = this;
 			return callback(null, abon);
 		}
 		catch(error) {
@@ -102,6 +103,7 @@ function Abonents(app) {
 				if (!msg.options) msg.options = {};
 				msg.options.tos = Date.now();
 				dst.queue.push(msg);
+				if (dst.agent) dst.agent.notify();
 				report.push({dstId: msg.dstId, status: "ok"});
 			}
 			return callback(null, report);

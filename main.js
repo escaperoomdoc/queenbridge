@@ -31,7 +31,7 @@ for (cfg of config.queen_room) {
 			console.log('error on abonent this.register : ' + error);
 			return;
 		}
-		abon.room = new queenxml.QueenClient(abon);
+		abon.agent = new queenxml.QueenClient(abon);
 	});
 }
 

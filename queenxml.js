@@ -6,6 +6,7 @@ const axios = require('axios');
 function QueenClient(abon) {
 	this.client = new net.Socket();
 	this.abon = abon;
+	this.abon.status = "offline";
 	this.connected = false;
 	this.stream = "";
 	this.scripts = {};
@@ -15,6 +16,7 @@ function QueenClient(abon) {
 	// queen room connect event
 	this.client.on('connect', () => {
 		that.connected = true;
+		that.abon.status = "online";
 		console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} connected`);
 	})
 	// queen room receive event
@@ -156,6 +158,7 @@ function QueenClient(abon) {
 	this.client.on('close', function() {
 		if (that.connected) {
 			that.connected = false;
+			that.abon.status = "offline";
 			console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} disconnected`);
 		}
 		setTimeout(() => {
@@ -169,6 +172,25 @@ function QueenClient(abon) {
 	// send function
 	this.send = function(data) {
 		this.client.write(data+"\n");
+	}
+	// agent interface
+	this.notify = function() {
+		// TODO: set nextTick, timeout or promises to deliver async + use
+		// an identifier (i.e. [msgId]set out.out_1.state on). But for now
+		// just send in a cycle...
+		if (this.connected) {
+			abon.owner.receive({id: abon.id}, (error, msgs) => {
+				try {
+					if (error) throw error;
+					for (msg of msgs) {
+						this.send(msg.payload);
+					}
+				}
+				catch(error) {
+					console.log('queenxml notify error:' + error);
+				}					
+			});
+		}
 	}
 }
 
