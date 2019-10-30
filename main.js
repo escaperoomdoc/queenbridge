@@ -3,8 +3,9 @@ const express = require("express");
 const cors = require('cors');
 const axios = require('axios');
 const config = require('./config.json');
-const abonents = require('./abonents');
-var queenxml = require('./queenxml');
+const abonents = require('./abonents/abonents');
+const abonqueen = require('./abonents/abon-queen');
+const abonhttp = require('./abonents/abon-http');
 var httpPort = 80;
 
 // init app, HTTP server and static recourses
@@ -31,13 +32,13 @@ for (cfg of config.queen_room) {
 			console.log('error on abonent this.register : ' + error);
 			return;
 		}
-		abon.agent = new queenxml.QueenClient(abon);
+		abon.agent = new abonqueen.QueenClient(abon);
 	});
 }
 
 // init http api
-const httpapi = require('./httpapi');
-httpapi(app);
+
+abonhttp(app);
 
 // socket.io
 const io = require('socket.io').listen(httpServer);

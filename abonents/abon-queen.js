@@ -126,7 +126,14 @@ function QueenClient(abon) {
 					if (obj.attributes.type === "event:json") {
 						json = JSON.parse(obj.content);
 						if (json.type === 'abonent') {
-							
+							that.abon.owner.send({
+								id: that.abon.id,
+								msgs: [{
+									dstId: json.id,
+									payload: json.payload									
+								}]
+							}, (error, report) => {
+							});
 						} else
 						if (json.type === 'http') {
 							axios({
