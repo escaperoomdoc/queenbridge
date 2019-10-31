@@ -2,70 +2,86 @@
 <html>
 <head>
 	<meta charset="UTF-8"/>
-	<title>Queen Xml Test</title>
+	<title>Queen Web Broker</title>
 	<script type="text/javascript" src="js/socket.io.dev.js"></script>
+	<script type="text/javascript" src="js/queenbridge.js"></script>
 </head>
 <body style='overflow: hidden'>
 	<form action="/login" method="post">
 		<div>
-			<label id="connectStatus" style="color: red">server disconnected</label>
-			<br/>
-		</div>
-		<br/>
-		<div>
-			<input type="text" list="events"/>
-			<datalist id="events">
-				 <option value="/api/register">
-				 <option value="/api/unregister">
-				 <option value="/api/send">
-			</datalist>
-		</div>
-		<br/>
-		<div>
-		<label>id</label>
-		<input type="text" size=40 name="" id="abonId"/>
+		<label id="connectStatus" style="color: red">server disconnected</label>
 		<br/><br/>
 		</div>
-
-		<br/>
 		<div>
-		<label>command</label>
-		<input type="text" size=40 name="" id="commandText"/>
-		<button onclick="commandExecute();return false">execute</button>
+		<label>srcId</label>
+		<input type="text" size=40 name="" id="srcId"/>
+		<button onclick="genarateAbonentId();return false">generate</button>
+		<button onclick="qwbrokerRegister();return false">register</button>
 		<br/><br/>
 		</div>
-
 		<div>
-		<label>events</label>
+		<label>dstId</label>
+		<input type="text" size=40 name="" id="dstId"/>
 		<br/><br/>
+		</div>
+		<div>
+		<label>message</label>
+		<input type="text" size=40 name="" id="payload" value="{'data': '<<<>>>'}"/>
+		<button onclick="qwbrokerMessage();return false">send</button>
+		<br/><br/>
+		</div>
+		<div>
 		<textarea id="logger" cols="80" rows="10"></textarea>
 		</div>
 	</form>	
 	<script>
 		// init GUI objects
 		connectStatus = document.getElementById("connectStatus");
-		commandText = document.getElementById("commandText");
+		srcId = document.getElementById("srcId");
+		dstId = document.getElementById("dstId");
+		payload = document.getElementById("payload");
 		logger = document.getElementById("logger");
-		// init qwio object		
-		var socket = io.connect(location.host);
-		socket.on("connect", function() {
-			connectStatus.style.color = 'green';
-			connectStatus.innerHTML = 'server connected';
-			console.log('server connected');
+		qb = new QueenBridge(location.host, {id: 'sio1'});
+		qb.on('connect', function() {
+			console.log('connect');
 		});
-		socket.on("disconnect", function() {
-			connectStatus.style.color = 'red';
-			connectStatus.innerHTML = 'server disconnected';
-			console.log('server disconnected');
+		qb.on('disconnect', function() {
+			console.log('disconnect');
 		});
-		socket.on('queenroom', function(data) {
-			logger.value += data;
-		});
+		/*
+		genarateAbonentId();
+		qwbrokerRegister()
+		// init qwio object
+		qwio.connect(location.host, (event, data) => {
+			if (event === "connect") {
+				connectStatus.style.color = 'green';
+				connectStatus.innerHTML = 'server connected';
+				console.log('server connected');
+			}
+			if (event === "disconnect") {
+				connectStatus.style.color = 'red';
+				connectStatus.innerHTML = 'server disconnected';
+				console.log('server disconnected');
+			}
+			if (event === "error") {
+				console.log('error: ' + data);		
+			}
+			if (event === "message") {
+				logger.value += data;
+			}
+		});		
 		// button slots
-		function commandExecute() {
-			//socket.emit('queenroom', commandText.value);
-			socket.emit('/api/register', {id: 123});
+		function genarateAbonentId() {
+			srcId.value = UUID();
 		}
-	</script>	
+		function qwbrokerRegister() {
+			qwio.register(srcId.value);
+		}
+		function qwbrokerMessage() {
+			qwio.send(dstId.value, payload.value);
+		}
+		*/
+	</script>
+	
 </body>
 </html>
