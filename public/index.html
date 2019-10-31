@@ -45,7 +45,8 @@
 		});
 		// button slots
 		function commandExecute() {
-			socket.emit('queenroom', commandText.value);
+			//socket.emit('queenroom', commandText.value);
+			socket.emit('/api/register', {id: 123});
 		}
 	</script>	
 </body>

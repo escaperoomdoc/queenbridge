@@ -201,5 +201,18 @@ function QueenClient(abon) {
 	}
 }
 
-module.exports.QueenClient = QueenClient;
-
+module.exports = (app) => {
+	for (cfg of app.queenbridge.config.queen_room) {
+		app.queenbridge.abonents.register({
+			type: "queen",
+			id: cfg.id,
+			config: cfg
+		}, (error, abon) => {
+			if (error) {
+				console.log('error on abonent this.register : ' + error);
+				return;
+			}
+			abon.agent = new QueenClient(abon);
+		});
+	}	
+}
