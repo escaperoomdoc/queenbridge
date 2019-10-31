@@ -8,15 +8,33 @@
 <body style='overflow: hidden'>
 	<form action="/login" method="post">
 		<div>
-		<label id="connectStatus" style="color: red">server disconnected</label>
+			<label id="connectStatus" style="color: red">server disconnected</label>
+			<br/>
+		</div>
+		<br/>
+		<div>
+			<input type="text" list="events"/>
+			<datalist id="events">
+				 <option value="/api/register">
+				 <option value="/api/unregister">
+				 <option value="/api/send">
+			</datalist>
+		</div>
+		<br/>
+		<div>
+		<label>id</label>
+		<input type="text" size=40 name="" id="abonId"/>
 		<br/><br/>
 		</div>
+
+		<br/>
 		<div>
 		<label>command</label>
 		<input type="text" size=40 name="" id="commandText"/>
 		<button onclick="commandExecute();return false">execute</button>
 		<br/><br/>
 		</div>
+
 		<div>
 		<label>events</label>
 		<br/><br/>
