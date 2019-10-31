@@ -4,6 +4,7 @@ function QueenBridge(host, options) {
 	this.socket = null;
 	this.id = null;
 	this.queue = [];
+	this.events = {};
 	this.connected = false;
 	const that = this;
 	if (options) {
@@ -13,19 +14,40 @@ function QueenBridge(host, options) {
 		this.events[event] = callback;
 	}	
 	function connect() {
-		this.socket = io.connect(host);
-		this.socket.on('connect', function() {
-			this.connected = true;
+		that.socket = io.connect(host);
+		that.socket.on('connect', function() {
 			that.connected = true;
-			if (this.events['connect']) this.events['connect']();
+			that.socket.emit('/api/register', {id: that.id});
+			if (that.events['connect']) that.events['connect']();
 		})
-		this.socket.on('disconnect', function() {
-			this.connected = false;
+		that.socket.on('disconnect', function() {
 			that.connected = false;
-			if (this.events['disconnect']) this.events['disconnect']();
+			if (that.events['disconnect']) that.events['disconnect']();
+		})
+		that.socket.on('/api/register', function(data) {
+			that.id = data.id;
+			if (that.events['register']) that.events['register'](data);
+		})
+		that.socket.on('/api/abonents', function(data) {
+			if (that.events['abonents']) that.events['abonents'](data);
 		})		
 	}
+	this.transfer = function() {
+		if (that.connected && that.queue.length>0) {
+			item = that.queue.shift();
+			that.socket.emit(item.event, item.data);
+		}		
+	}
+	this.send = function(event, data) {
+		that.queue.push({
+			event: event,
+			data: data
+		});
+	}
 	connect();
+	setInterval(function() {
+		that.transfer();
+	}, 100)
 }
 
 

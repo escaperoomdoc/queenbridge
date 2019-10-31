@@ -11,6 +11,8 @@
 		<div>
 		<label id="connectStatus" style="color: red">server disconnected</label>
 		<br/><br/>
+		<label id="registerStatus" style="color: black">server unregistered</label>
+		<br/><br/>
 		</div>
 		<div>
 		<label>srcId</label>
@@ -37,17 +39,31 @@
 	<script>
 		// init GUI objects
 		connectStatus = document.getElementById("connectStatus");
+		registerStatus = document.getElementById("registerStatus");
 		srcId = document.getElementById("srcId");
 		dstId = document.getElementById("dstId");
 		payload = document.getElementById("payload");
 		logger = document.getElementById("logger");
 		qb = new QueenBridge(location.host, {id: 'sio1'});
 		qb.on('connect', function() {
-			console.log('connect');
+			connectStatus.style.color = 'green';
+			connectStatus.innerHTML = 'server connected';
 		});
 		qb.on('disconnect', function() {
-			console.log('disconnect');
+			connectStatus.style.color = 'red';
+			connectStatus.innerHTML = 'server disconnected';
 		});
+		qb.on('register', function(data) {
+			registerStatus.innerHTML = 'server registered as: ' + data.id ? data.id : data.error;
+		});
+		qb.on('abonents', function(data) {
+			console.log(data);
+		});
+		qb.on('receive', function(data) {
+			console.log(data);
+		});
+		
+		qb.send('/api/abonents');
 		/*
 		genarateAbonentId();
 		qwbrokerRegister()
