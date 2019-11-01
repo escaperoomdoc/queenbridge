@@ -1,5 +1,4 @@
 
-
 function QueenBridge(host, options) {
 	this.socket = null;
 	this.id = null;
