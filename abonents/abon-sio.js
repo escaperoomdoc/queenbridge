@@ -34,6 +34,7 @@ module.exports = (app) => {
         socket.on('/api/register', (data) => {
             try {
                 data.type = "sio";
+                data.override = true;
                 app.queenbridge.abonents.register(data, (error, abon) => {
                     if (error) throw error;
                     socket.emit('/api/register', {id:abon.id});
@@ -45,7 +46,7 @@ module.exports = (app) => {
         });
         socket.on('/api/unregister', (data) => {
             try {
-                app.queenbridge.abonents.unregister(req.body, (error) => {
+                app.queenbridge.abonents.unregister(data, (error) => {
                     if (error) throw error;
                     socket.emit('/api/unregister', {});
                 });
@@ -56,7 +57,7 @@ module.exports = (app) => {
         });
         socket.on('/api/send', (data) => {
             try {
-                app.queenbridge.abonents.send(req.body, (error, report) => {
+                app.queenbridge.abonents.send(data, (error, report) => {
                     if (error) throw error;
                     socket.emit('/api/send', report);
                 });

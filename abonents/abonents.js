@@ -42,8 +42,11 @@ function Abonents(app) {
 	this.register = function(data, callback) {
 		try {
 			if (data.id) {
-				var abon = this.get(data.id);
-				if (abon) throw `abonent [${data.id}] already exists`;
+				var index = this.getIndex(data.id);
+				if (index>=0) {
+					if (data.override) this.abonents.splice(index,1);
+					else throw `abonent [${data.id}] already exists`;
+				}				
 			}
 			var abon = {};
 			if (data.type === "queen") {

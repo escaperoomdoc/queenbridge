@@ -15,21 +15,14 @@
 		<br/><br/>
 		</div>
 		<div>
-		<label>srcId</label>
-		<input type="text" size=40 name="" id="srcId"/>
-		<button onclick="genarateAbonentId();return false">generate</button>
-		<button onclick="qwbrokerRegister();return false">register</button>
-		<br/><br/>
+		<label>send to id</label>
+		<select id="abonlist"/>		
 		</div>
-		<div>
-		<label>dstId</label>
-		<input type="text" size=40 name="" id="dstId"/>
 		<br/><br/>
-		</div>
 		<div>
-		<label>message</label>
-		<input type="text" size=40 name="" id="payload" value="{'data': '<<<>>>'}"/>
-		<button onclick="qwbrokerMessage();return false">send</button>
+		<label>payload</label>
+		<input type="text" size=40 name="" id="payload" value="{'data':'empty'}"/>
+		<button onclick="sendMessage();return false">send</button>
 		<br/><br/>
 		</div>
 		<div>
@@ -39,12 +32,17 @@
 	<script>
 		// init GUI objects
 		connectStatus = document.getElementById("connectStatus");
-		registerStatus = document.getElementById("registerStatus");
-		srcId = document.getElementById("srcId");
-		dstId = document.getElementById("dstId");
 		payload = document.getElementById("payload");
 		logger = document.getElementById("logger");
+		abonlist = document.getElementById("abonlist");
 		qb = new QueenBridge(location.host, {id: 'sio1'});
+		qb.on('receive', function(data) {
+			console.log(data);
+		});
+		function sendMessage() {
+			qb.send(abonlist.value, payload.value);
+		}
+		
 		qb.on('connect', function() {
 			connectStatus.style.color = 'green';
 			connectStatus.innerHTML = 'server connected';
@@ -54,49 +52,32 @@
 			connectStatus.innerHTML = 'server disconnected';
 		});
 		qb.on('register', function(data) {
-			registerStatus.innerHTML = 'server registered as: ' + data.id ? data.id : data.error;
+			registerStatus.style.color = 'blue';
+			registerStatus.innerHTML = 'server registered as: ' + data.id;
 		});
 		qb.on('abonents', function(data) {
-			console.log(data);
+			while(abonlist.length>0) {
+				abonlist.remove(0);
+			}
+			for (abon of data.abonents) {
+				var option = document.createElement("option");
+				option.text = abon.id;
+				abonlist.add(option);
+			}			
 		});
 		qb.on('receive', function(data) {
 			console.log(data);
 		});
 		
-		qb.send('/api/abonents');
-		/*
-		genarateAbonentId();
-		qwbrokerRegister()
-		// init qwio object
-		qwio.connect(location.host, (event, data) => {
-			if (event === "connect") {
-				connectStatus.style.color = 'green';
-				connectStatus.innerHTML = 'server connected';
-				console.log('server connected');
+		qb.on('error', function(error) {
+			if (error.type === 'register') {
+				registerStatus.style.color = 'red';
+				registerStatus.innerHTML = 'server unregistered: ' + data.error;			
 			}
-			if (event === "disconnect") {
-				connectStatus.style.color = 'red';
-				connectStatus.innerHTML = 'server disconnected';
-				console.log('server disconnected');
-			}
-			if (event === "error") {
-				console.log('error: ' + data);		
-			}
-			if (event === "message") {
-				logger.value += data;
-			}
-		});		
-		// button slots
-		function genarateAbonentId() {
-			srcId.value = UUID();
-		}
-		function qwbrokerRegister() {
-			qwio.register(srcId.value);
-		}
-		function qwbrokerMessage() {
-			qwio.send(dstId.value, payload.value);
-		}
-		*/
+			console.log(error.type + ' : ' + error.error);
+		});
+		qb.requestAbonents();
+
 	</script>
 	
 </body>

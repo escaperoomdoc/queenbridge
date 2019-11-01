@@ -6,6 +6,8 @@ function QueenBridge(host, options) {
 	this.queue = [];
 	this.events = {};
 	this.connected = false;
+	this.msgId = 0;
+	this.pending = 0;
 	const that = this;
 	if (options) {
 		this.id = options.id;
@@ -25,110 +27,70 @@ function QueenBridge(host, options) {
 			if (that.events['disconnect']) that.events['disconnect']();
 		})
 		that.socket.on('/api/register', function(data) {
-			that.id = data.id;
-			if (that.events['register']) that.events['register'](data);
+			if (data.id) {
+				that.id = data.id;
+				if (that.events['register']) that.events['register'](data);
+			}
+			if (data.error) {
+				data.type = 'register';
+				if (that.events['error']) that.events['error'](data);
+			}
 		})
 		that.socket.on('/api/abonents', function(data) {
 			if (that.events['abonents']) that.events['abonents'](data);
-		})		
+		})
+		that.socket.on('/api/receive', function(data) {
+			if (that.events['receive']) {
+				try {
+					for (msg in data.msgs) {
+						that.events['receive']({
+							id: msg.dstId,
+							payload: msg.payload
+						});
+					}
+				}
+				catch(error) {
+					data = {type: 'receive', error: error};					
+					if (that.events['error']) that.events['error'](data);					
+				}
+			}
+			else
+			if (that.events['receivebulk']) {
+				that.events['receivebulk'](data);
+			}
+		})
+		that.socket.on('/api/send', function(data) {
+			if (that.pending>0 && that.queue.length>=that.pending) {
+				that.queue.splice(0, that.pending);
+			}
+		})
 	}
 	this.transfer = function() {
-		if (that.connected && that.queue.length>0) {
-			item = that.queue.shift();
-			that.socket.emit(item.event, item.data);
+		if (that.connected && that.queue.length>0 && that.pending===0) {
+			that.socket.emit('/api/send', {msgs: that.queue});
+			that.queue = []; // replace with the code below later...
+			//that.pending = that.queue.length;
 		}		
 	}
-	this.send = function(event, data) {
-		that.queue.push({
-			event: event,
-			data: data
-		});
+	this.requestAbonents = function() {
+		that.socket.emit('/api/abonents');
 	}
+	this.send = function(id, payload, options) {
+		that.queue.push({
+			dstId: id,
+			msgId: ++that.msgId,
+			payload: payload,
+			options: options ? options : null
+		});
+		this.transfer();
+	}
+	this.sendbulk = function(data) {
+		that.queue.concat(data.msgs);
+		this.transfer();
+	}	
 	connect();
 	setInterval(function() {
 		that.transfer();
 	}, 100)
 }
-
-
-
-/*
-let QueenBridge = {
-	// members
-	socket: null,
-	id: null,
-	queue: [],
-	connected: false,
-	
-	// private methods
-	transfer: function() {
-		if(this.connected) {
-			item = this.queue.shift();
-			if(item) {
-				let text = JSON.stringify(item);
-				this.socket.emit('qwbroker', text);
-			}
-		}		
-	},
-
-	// interface methods
-	connect(host, fn) {
-		this.socket = io.connect(host);
-		that = this;
-		this.socket.on("connect", function() {
-			that.connected = true;
-			fn("connect");
-		});
-		this.socket.on("disconnect", function() {
-			that.connected = false;
-			fn("disconnect");
-		});
-		this.socket.on('qwbroker', function(data) {
-			fn("message", data);
-			return;
-			try {
-				var obj = JSON.parse(data);
-				logger.value += data;
-				//that.socket.emit('qwbroker', '{"type":"delivered"}');
-			}
-			catch(error) {
-				console.log('ERROR : ' + error + ' # ' + data);
-			}
-		});
-		setInterval(() => {
-			this.transfer();
-		}, 100);		
-	},
-	register(id, options) {
-		this.id = id;
-		let item = {};
-		item.type = "register";
-		item.srcId = id;
-		if (options) {
-			item.options = {};
-			if (options.name) item.options.name = options.name;
-			if (options.keepOffline) item.options.keepOffline = options.keepOffline;
-		}
-		this.queue.push(item);
-		this.transfer();
-	},
-	send(dstId, payload, options) {
-		let item = {};
-		item.type = "message";
-		item.srcId = this.id;
-		item.dstId = dstId;
-		item.messageId = UUID();
-		if (options) {
-			item.options = {};
-			if (options.qos) item.options.qos = options.qos;
-			if (options.ttl) item.options.ttl = options.ttl;
-		}
-		item.payload = payload;
-		this.queue.push(item);
-		this.transfer();
-	}
-};
-*/
-
-
 
