@@ -35,7 +35,8 @@
 		payload = document.getElementById("payload");
 		logger = document.getElementById("logger");
 		abonlist = document.getElementById("abonlist");
-		qb = new QueenBridge(location.host, {id: 'sio1'});
+		name = 'siotest-' + Math.floor(Math.random() * 1000);
+		qb = new QueenBridge(location.host, {id: name});
 		qb.on('receive', function(data) {
 			console.log(data);
 		});
@@ -51,10 +52,9 @@
 			connectStatus.style.color = 'red';
 			connectStatus.innerHTML = 'server disconnected';
 		});
-		qb.on('register', function(data) {
-			registerStatus.style.color = 'blue';
-			registerStatus.innerHTML = 'server registered as: ' + data.id;
-		});
+		qb.on('ping', function(data) {
+			console.log('ping');
+		});		
 		qb.on('abonents', function(data) {
 			while(abonlist.length>0) {
 				abonlist.remove(0);
@@ -64,6 +64,11 @@
 				option.text = abon.id;
 				abonlist.add(option);
 			}			
+		});
+
+		qb.on('register', function(data) {
+			registerStatus.style.color = 'blue';
+			registerStatus.innerHTML = 'server registered as: ' + data.id;
 		});
 		qb.on('receive', function(data) {
 			console.log(data);

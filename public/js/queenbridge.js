@@ -25,6 +25,12 @@ function QueenBridge(host, options) {
 			that.connected = false;
 			if (that.events['disconnect']) that.events['disconnect']();
 		})
+		that.socket.on('/api/ping', function(data) {
+			if (that.events['ping']) that.events['ping'](data);
+		})
+		that.socket.on('/api/abonents', function(data) {
+			if (that.events['abonents']) that.events['abonents'](data);
+		})
 		that.socket.on('/api/register', function(data) {
 			if (data.id) {
 				that.id = data.id;
@@ -34,9 +40,6 @@ function QueenBridge(host, options) {
 				data.type = 'register';
 				if (that.events['error']) that.events['error'](data);
 			}
-		})
-		that.socket.on('/api/abonents', function(data) {
-			if (that.events['abonents']) that.events['abonents'](data);
 		})
 		that.socket.on('/api/receive', function(data) {
 			if (that.events['receive']) {
@@ -90,6 +93,9 @@ function QueenBridge(host, options) {
 	connect();
 	setInterval(function() {
 		that.transfer();
-	}, 100)
+	}, 100);
+	setInterval(function() {
+		that.socket.emit('/api/ping');
+	}, 1000)	
 }
 

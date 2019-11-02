@@ -181,7 +181,7 @@ function QueenClient(abon) {
 		this.client.write(data+"\n");
 	}
 	// agent interface
-	this.notify = function() {
+	this.wakeup = function() {
 		// TODO: set nextTick, timeout or promises to deliver async + use
 		// an identifier (i.e. [msgId]set out.out_1.state on). But for now
 		// just send in a cycle...
@@ -195,7 +195,7 @@ function QueenClient(abon) {
 				}
 				catch(error) {
 					console.log('queenxml notify error:' + error);
-				}					
+				}		
 			});
 		}
 	}

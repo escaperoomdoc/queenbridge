@@ -39,14 +39,19 @@ function Abonents(app) {
 			return callback(error, null);
 		}
 	}
+	this.isOnline = function() {
+		return status === 'online';
+	}
 	this.register = function(data, callback) {
 		try {
 			if (data.id) {
 				var index = this.getIndex(data.id);
 				if (index>=0) {
-					if (data.override) this.abonents.splice(index,1);
+					if (!this.abonents[index].isOnline() && data.override) {
+						this.abonents.splice(index,1);
+					}
 					else throw `abonent [${data.id}] already exists`;
-				}				
+				}
 			}
 			var abon = {};
 			if (data.type === "queen") {
@@ -62,6 +67,7 @@ function Abonents(app) {
 			else throw "unknown abonent type"
 			abon.type = data.type;
 			abon.id = data.id ? data.id : uuid();
+			abon.keepOffline = data.keepOffline ? data.keepOffline : null;
 			abon.queue = [];
 			abon.status = "passive";
 			this.abonents.push(abon);
@@ -106,7 +112,7 @@ function Abonents(app) {
 				if (!msg.options) msg.options = {};
 				msg.options.tos = Date.now();
 				dst.queue.push(msg);
-				if (dst.agent) dst.agent.notify();
+				if (dst.agent) dst.agent.wakeup();
 				report.push({dstId: msg.dstId, status: "ok"});
 			}
 			return callback(null, report);
