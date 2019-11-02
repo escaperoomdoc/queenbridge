@@ -1,6 +1,5 @@
 {
 	"settings": {
-		"requireMessageId": true,
 		"queueSizeLimit": 1024
 	},
 	"queen_room": [{

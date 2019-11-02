@@ -32,5 +32,3 @@ abonhttp(app);
 abonsio(app);
 
 console.log("queen bridge started...");
-
-

@@ -71,7 +71,7 @@
 			registerStatus.innerHTML = 'server registered as: ' + data.id;
 		});
 		qb.on('receive', function(data) {
-			console.log(data);
+			logger.value += JSON.stringify(data);
 		});
 		
 		qb.on('error', function(error) {

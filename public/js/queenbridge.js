@@ -44,7 +44,7 @@ function QueenBridge(host, options) {
 		that.socket.on('/api/receive', function(data) {
 			if (that.events['receive']) {
 				try {
-					for (msg in data.msgs) {
+					for (msg of data.msgs) {
 						that.events['receive']({
 							id: msg.dstId,
 							payload: msg.payload

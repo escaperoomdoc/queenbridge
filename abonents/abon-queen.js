@@ -6,17 +6,16 @@ const axios = require('axios');
 function QueenClient(abon) {
 	this.client = new net.Socket();
 	this.abon = abon;
-	this.abon.status = "offline";
 	this.connected = false;
 	this.stream = "";
 	this.scripts = {};
 	this.io = {};
 	this.state = {};
+	this.abon.setOnline(false);
 	var that = this;
 	// queen room connect event
 	this.client.on('connect', () => {
-		that.connected = true;
-		that.abon.status = "online";
+		this.abon.setOnline(true);
 		console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} connected`);
 	})
 	// queen room receive event
@@ -149,6 +148,14 @@ function QueenClient(abon) {
 							});
 						}
 					}
+					else {
+						if (abon.queue.length) {
+							var msg = abon.queue[0];
+							if (msg.pending && msg.msgId==obj.attributes.id) {
+								abon.queue.shift();
+							}
+						}
+					}
 				}
 				catch(error) {
 					console.log(`handle (${obj.attributes.type}) error : ${error}`);
@@ -163,11 +170,10 @@ function QueenClient(abon) {
 	});
 	// queen room disconnect or connect failure event
 	this.client.on('close', function() {
-		if (that.connected) {
-			that.connected = false;
-			that.abon.status = "offline";
+		if (that.abon.online) {
 			console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} disconnected`);
 		}
+		that.abon.setOnline(false);
 		setTimeout(() => {
 			that.client.connect({ port: that.abon.config.port, host: that.abon.config.host })
 		}, 1000);
@@ -181,23 +187,15 @@ function QueenClient(abon) {
 		this.client.write(data+"\n");
 	}
 	// agent interface
-	this.wakeup = function() {
-		// TODO: set nextTick, timeout or promises to deliver async + use
-		// an identifier (i.e. [msgId]set out.out_1.state on). But for now
-		// just send in a cycle...
-		if (this.connected) {
-			abon.owner.receive({id: abon.id}, (error, msgs) => {
-				try {
-					if (error) throw error;
-					for (msg of msgs) {
-						this.send(msg.payload);
-					}
-				}
-				catch(error) {
-					console.log('queenxml notify error:' + error);
-				}		
-			});
-		}
+	this.trySend = function() {
+		if (!abon.online || !abon.queue.length) return;
+		msg = abon.queue[0];
+		text = '';
+		if (msg.msgId) text += ('[' + msg.msgId + ']');
+		text += msg.payload;		
+		this.send(text);
+		if (msg.options && msg.options.ack) msg.pending = true;
+		else abon.queue.shift();
 	}
 }
 
@@ -212,6 +210,8 @@ module.exports = (app) => {
 				console.log('error on abonent this.register : ' + error);
 				return;
 			}
+			abon.config = cfg;
+			abon.static = true;
 			abon.agent = new QueenClient(abon);
 		});
 	}	

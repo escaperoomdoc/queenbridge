@@ -10,7 +10,13 @@ module.exports = (app) => {
      	// handle disconnect
      	socket.on('disconnect', (reason) => {
    		console.log('io.on(disconnect) : ', socket.id, ' reason : ', reason );
-      	if (connections[socket.id]) delete connections[socket.id];
+			if (connections[socket.id]) {
+				if (connections[socket.id].abon) {
+					connections[socket.id].abon.online = false;
+					connections[socket.id].abon.timeofDisconnect = Date.now();
+				}
+				delete connections[socket.id];
+			}
       });
       // handle an error
       socket.on('error', (error) => {
@@ -40,11 +46,11 @@ module.exports = (app) => {
               	socket.emit('/api/register', {id:abon.id});
 					connections[socket.id].abon = abon;
 					abon.agent = connections[socket.id];
-					abon.status = "online";
-              	connections[socket.id].wakeup = function() {
-						abon.owner.receive({id: abon.id}, (error, msgs) => {
-							socket.emit('/api/receive', {msgs: msgs});
-						});
+					abon.online = true;
+              	connections[socket.id].trySend = function() {
+						if (!abon.online || !abon.queue.length) return;
+						socket.emit('/api/receive', {msgs: abon.queue});
+						abon.queue = [];
 					}
       		});
    		}
@@ -75,7 +81,7 @@ module.exports = (app) => {
          }
    	});
    	socket.on('/api/receive', (data) => {
-   		socket.emit('/api/receive', {error: 'not implemented for socket.io'});
+   		console.log('response on receive');
    	});        
 	});
 }

@@ -29,7 +29,7 @@ function Abonents(app) {
 					type: abon.type,
 					queue: abon.queue.length,
 					alias: abon.alias,
-					status: abon.status,
+					status: abon.online ? "online" : "offline",
 					tola: abon.tola
 				})
 			}
@@ -39,39 +39,34 @@ function Abonents(app) {
 			return callback(error, null);
 		}
 	}
-	this.isOnline = function() {
-		return status === 'online';
-	}
 	this.register = function(data, callback) {
 		try {
+			var abon = {};
 			if (data.id) {
 				var index = this.getIndex(data.id);
 				if (index>=0) {
-					if (!this.abonents[index].isOnline() && data.override) {
+					abon = this.abonents[index];
+					var overridable = true;
+					if (abon.online) overridable = false;
+					if (abon.static) overridable = false;
+					if (overridable && data.override) {
 						this.abonents.splice(index,1);
 					}
 					else throw `abonent [${data.id}] already exists`;
 				}
-			}
-			var abon = {};
-			if (data.type === "queen") {
-				abon.config = data.config;
-				abon.static = true;
-			}
-			else
-			if (data.type === "sio") {
-			}
-			else
-			if (data.type === "http") {
-			}
-			else throw "unknown abonent type"
+			}			
 			abon.type = data.type;
 			abon.id = data.id ? data.id : uuid();
 			abon.keepOffline = data.keepOffline ? data.keepOffline : null;
 			abon.queue = [];
-			abon.status = "passive";
-			this.abonents.push(abon);
+			abon.online = false;
+			abon.timeofDisconnect = 0;
 			abon.owner = this;
+			abon.setOnline = function(state) {
+				if (!state && abon.online) this.timeofDisconnect = Date.now();
+				abon.online = state;
+			}
+			this.abonents.push(abon);
 			return callback(null, abon);
 		}
 		catch(error) {
@@ -105,15 +100,13 @@ function Abonents(app) {
 					report.push({dstId: msg.dstId, status: "error(queue overflow)"});
 					continue;	
 				}
-				if (!msg.msgId && app.queenbridge.config.settings.requireMessageId) {
-					msg.msgId = ++ this.messageCounter;
-				}
+				if (!msg.msgId) msg.msgId = ++this.messageCounter;
 				msg.srcId = abon ? abon.id : null;
 				if (!msg.options) msg.options = {};
 				msg.options.tos = Date.now();
 				dst.queue.push(msg);
-				if (dst.agent) dst.agent.wakeup();
 				report.push({dstId: msg.dstId, status: "ok"});
+				if (dst.agent) dst.agent.trySend();
 			}
 			return callback(null, report);
 		}
@@ -144,8 +137,19 @@ function Abonents(app) {
 		}
 	}
 	setInterval(() => {
-		
-	}, 1000)
+		for (index in this.abonents) {
+			var abon = this.abonents[index];
+			if (abon.static || abon.online) continue;
+			if (abon.keepOffline && abon.keepOffline>Date.now()-abon.timeofDisconnect) {
+				continue;
+			}
+			console.log(`abonent ${abon.id} deleted by timeout`)
+			this.abonents.splice(index,1);			
+		}
+		for (abon of this.abonents) {
+			if (abon.agent) abon.agent.trySend();
+		}		
+	}, 100)
 }
 
 module.exports.Abonents = Abonents;
