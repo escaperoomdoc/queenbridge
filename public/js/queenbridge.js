@@ -1,3 +1,9 @@
+// QueenBridge socket.io wrapper, purposes:
+// 1. offline queues, socket.io does non provide
+// 2. autoping, socket.io disconnects on timeout
+// 3. simplification: register, error handling, queueing, etc... wrapper takes care of it
+// 4. interface unification, socket.io sometimes changes it, wrapper takes care of it
+// 5. if we will have to avoid of socket.io in the future, wrapper provides this easily
 
 function QueenBridge(host, options) {
 	this.socket = null;
@@ -10,6 +16,17 @@ function QueenBridge(host, options) {
 	const that = this;
 	if (options) {
 		this.id = options.id;
+		// if autoping is not defined => autoping = 1000 by default
+		if (options.autoping) this.autoping = options.autoping;
+		else {
+			
+			if (options.autoping === null) this.autoping = null;
+			else this.autoping = 1000;
+		}
+		if (options.autoping) {
+			if (this.autoping < 100) this.autoping = 100;
+			if (this.autoping > 5000) this.autoping = 5000;
+		}
 	}
 	this.on = function(event, callback) {
 		this.events[event] = callback;
@@ -93,13 +110,18 @@ function QueenBridge(host, options) {
 	this.sendbulk = function(data) {
 		that.queue.concat(data.msgs);
 		this.transfer();
+	}
+	this.ping = function(id) {
+		that.socket.emit('/api/ping', {id: id});
 	}	
 	connect();
 	setInterval(function() {
 		that.transfer();
 	}, 100);
-	setInterval(function() {
-		that.socket.emit('/api/ping');
-	}, 1000)	
+	if (this.autoping) {
+		setInterval(function() {
+			that.socket.emit('/api/ping');
+		}, this.autoping)
+	}
 }
 
