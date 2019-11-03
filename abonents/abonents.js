@@ -27,6 +27,7 @@ function Abonents(app) {
 				result.push({
 					id: abon.id,
 					type: abon.type,
+					static: abon.static,
 					queue: abon.queue.length,
 					alias: abon.alias,
 					status: abon.online ? "online" : "offline",

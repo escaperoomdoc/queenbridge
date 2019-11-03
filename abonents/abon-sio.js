@@ -24,7 +24,7 @@ module.exports = (app) => {
       });
       // handle API
       socket.on('/api/ping', (data) => {
-      	socket.emit('/api/ping', '');
+      	socket.emit('/api/ping', (data && data.id) ? {id: data.id} : {});
       });
       socket.on('/api/abonents', (data) => {
       	try {

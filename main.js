@@ -7,13 +7,17 @@ const abonqueen = require('./abonents/abon-queen');
 const abonhttp = require('./abonents/abon-http');
 const abonsio = require('./abonents/abon-sio');
 const topics = require('./abonents/topics');
+const games = require('./games');
 var httpPort = 80;
 
 // init app, HTTP server and static recourses
 const app = express();
 app.use(express.json());
 app.use(cors());
+games(app);
 app.use(express.static('public'));
+
+
 var httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => {});
 
