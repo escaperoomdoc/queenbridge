@@ -77,6 +77,10 @@ function QueenBridge(host, options) {
 	this.requestAbonents = function() {
 		that.socket.emit('/api/abonents');
 	}
+	this.registerAbonent = function(id) {
+		that.socket.emit('/api/register', {id: id});
+		requestAbonents();
+	}	
 	this.send = function(id, payload, options) {
 		that.queue.push({
 			dstId: id,

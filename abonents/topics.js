@@ -1,5 +1,6 @@
 
 function Topics(app) {
+	this.app = app;
 	this.topics = app.queenbridge.config.topics ? app.queenbridge.config.topics : [];
 	this.get = function(id) {
 		if (id) {
@@ -88,17 +89,19 @@ function Topics(app) {
 		try {
 			srcId = data.id;			
 			for (msg of data.msgs) {
-				var topic = this.get(data.topic);
+				var topic = this.get(msg.topic);
 				if (!topic) continue;
 				for (subscriber of topic.subscribers) {
-					abon.send({
+					this.app.queenbridge.abonents.send({
 						id: srcId,
 						msgs: [{
 							dstId: subscriber,
 							msgId: msg.msgId,
 							payload: msg.payload,
 							options: msg.options
-					}]});
+					}]}, (error, report) => {
+						if (error) console.log('error on topic publish:' + error);
+					});
 				}
 			}
 			return callback(null);

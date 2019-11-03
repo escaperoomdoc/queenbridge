@@ -67,10 +67,10 @@ module.exports = (app) => {
 	})
 	app.get('/api/topics', async (req, res, next) => {
 		try {
-			app.queenbridge.topics.receive(params, (error, result) => {
+			app.queenbridge.topics.getlist((error, result) => {
 				if (error) throw error;
-				res.status(200).json({msgs: result});
-			});			
+				res.status(200).json({topics: result});
+			});
 		}
 		catch(error) {
 			return res.status(400).json({error: 'post /api/receive: ' + error});

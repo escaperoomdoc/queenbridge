@@ -63,10 +63,12 @@ function QueenClient(abon) {
 								}
 							}
 						}
+						that.autopublish("scripts", that.scripts);
 					}
 					else
 					if (obj.attributes.type === "getlanguage") {
 						that.state.language = obj.content;
+						that.autopublish("language", obj.content);
 					}
 					else
 					if (obj.attributes.type === "getstates") {
@@ -79,6 +81,7 @@ function QueenClient(abon) {
 								arr[item.name].state = parseInt(item.state);
 							}
 						}
+						that.autopublish("states", content);
 					}
 					else
 					if (obj.attributes.type === "getmode") {
@@ -86,6 +89,7 @@ function QueenClient(abon) {
 						if (sl.length > 2) throw "more than 2 parameters"; else
 						if (sl.length === 2) that.state.stage = sl[1]; else
 						that.state.mode = sl[0];
+						that.autopublish("mode", that.state.mode);
 					}
 					else
 					if (obj.attributes.type === "event:trigger") {
@@ -96,14 +100,17 @@ function QueenClient(abon) {
 								arr[item.name].state = parseInt(item.state);
 							}
 						}
+						that.autopublish("trigger", content);
 					}
 					else
 					if (obj.attributes.type === "event:mode") {
 						that.state.mode = obj.content;
+						that.autopublish("mode", obj.content);
 					}
 					else
 					if (obj.attributes.type === "event:scenario") {
 						that.state.scenario = obj.content;
+						that.autopublish("scenario", obj.content);
 					}
 					else
 					if (obj.attributes.type === "event:stage") {
@@ -112,14 +119,17 @@ function QueenClient(abon) {
 						that.state.stagePrev = sl[0];
 						that.state.stage = sl[1];
 						that.state.stageReason = sl[2];
+						that.autopublish("stage", sl[1]);
 					}
 					else
 					if (obj.attributes.type === "event:language") {
 						that.state.language = obj.content;
+						that.autopublish("language", obj.content);
 					}
 					else
 					if (obj.attributes.type === "event:reminder") {
 						// pass obj.content somewhere...
+						that.autopublish("reminder", obj.content);
 					}
 					else
 					if (obj.attributes.type === "event:json") {
@@ -147,6 +157,7 @@ function QueenClient(abon) {
 							}).finally(() => {
 							});
 						}
+						that.autopublish("json", content);
 					}
 					else {
 						if (abon.queue.length) {
@@ -196,6 +207,33 @@ function QueenClient(abon) {
 		this.send(text);
 		if (msg.options && msg.options.ack) msg.pending = true;
 		else abon.queue.shift();
+	}
+	// autopublish
+	this.autopublish = function(type, data) {
+		if (abon.config.autopublish[type]) this.publish(abon.config.autopublish[type], type, data);
+		if (abon.config.autopublish["all"]) this.publish(abon.config.autopublish["all"], type, data);
+	}
+	this.publish = function(topics, type, data) {
+		try {
+			for (topic of topics) {
+				abon.owner.app.queenbridge.topics.publish({
+					id: abon.id,
+					msgs: [{
+						topic: topic,
+						msgId: null,
+						payload: {
+							type: type,
+							data: data
+						}
+					}]
+				}, (error) => {
+					if (error) throw error;
+				})
+			}
+		}
+		catch(error) {
+			console.log("error on abonqueen publish: " + error);
+		}
 	}
 }
 

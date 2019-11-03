@@ -1,6 +1,7 @@
 const uuid = require('uuidv4').default;
 
 function Abonents(app) {
+	this.app = app;
    this.abonents = [];
 	this.messageCounter = 0;
 	this.get = function(id) {

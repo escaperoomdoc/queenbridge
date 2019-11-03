@@ -40,7 +40,14 @@ module.exports = (app) => {
       socket.on('/api/register', (data) => {
       	try {
          	data.type = "sio";
-         	data.override = true;
+				data.override = true;
+				var prevAbon = connections[socket.id].abon;
+				if (prevAbon) {
+					app.queenbridge.abonents.unregister({id: prevAbon.id}, (error) => {
+						console.log(`reregistering abonent ${prevAbon.id} to ${data.id}...`);
+						if (error) console.log('unregister error: ' + error);
+					})
+				}
             app.queenbridge.abonents.register(data, (error, abon) => {
              	if (error) throw error;
               	socket.emit('/api/register', {id:abon.id});
