@@ -49,7 +49,15 @@ module.exports = (app) => {
 					abon.online = true;
               	connections[socket.id].trySend = function() {
 						if (!abon.online || !abon.queue.length) return;
-						socket.emit('/api/receive', {msgs: abon.queue});
+						var params = {
+							id: abon.id,
+							ack: false,
+							max: null
+						};	
+						app.queenbridge.abonents.receive(params, (error, result) => {
+							if (error) throw error;
+							socket.emit('/api/receive', {msgs: result});
+						});						
 						abon.queue = [];
 					}
       		});

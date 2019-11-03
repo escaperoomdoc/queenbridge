@@ -38,7 +38,7 @@
 		name = 'siotest-' + Math.floor(Math.random() * 1000);
 		qb = new QueenBridge(location.host, {id: name});
 		qb.on('receive', function(data) {
-			console.log(data);
+			logger.value += JSON.stringify(data);
 		});
 		function sendMessage() {
 			qb.send(abonlist.value, payload.value);
@@ -70,9 +70,7 @@
 			registerStatus.style.color = 'blue';
 			registerStatus.innerHTML = 'server registered as: ' + data.id;
 		});
-		qb.on('receive', function(data) {
-			logger.value += JSON.stringify(data);
-		});
+
 		
 		qb.on('error', function(error) {
 			if (error.type === 'register') {

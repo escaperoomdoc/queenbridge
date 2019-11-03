@@ -200,7 +200,7 @@ function QueenClient(abon) {
 }
 
 module.exports = (app) => {
-	for (cfg of app.queenbridge.config.queen_room) {
+	for (cfg of app.queenbridge.config.abonqueen) {
 		app.queenbridge.abonents.register({
 			type: "queen",
 			id: cfg.id,

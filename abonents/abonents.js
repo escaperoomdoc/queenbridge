@@ -2,8 +2,7 @@ const uuid = require('uuidv4').default;
 
 function Abonents(app) {
    this.abonents = [];
-   this.messageCounter = 0;
-	// finds abonent by id
+	this.messageCounter = 0;
 	this.get = function(id) {
 		if (id) {
 			for (abon of this.abonents) {
@@ -42,6 +41,7 @@ function Abonents(app) {
 	this.register = function(data, callback) {
 		try {
 			var abon = {};
+			var newinstance = true;
 			if (data.id) {
 				var index = this.getIndex(data.id);
 				if (index>=0) {
@@ -49,24 +49,24 @@ function Abonents(app) {
 					var overridable = true;
 					if (abon.online) overridable = false;
 					if (abon.static) overridable = false;
-					if (overridable && data.override) {
-						this.abonents.splice(index,1);
-					}
+					if (overridable && data.override) newinstance = false;
 					else throw `abonent [${data.id}] already exists`;
 				}
 			}			
 			abon.type = data.type;
 			abon.id = data.id ? data.id : uuid();
 			abon.keepOffline = data.keepOffline ? data.keepOffline : null;
-			abon.queue = [];
 			abon.online = false;
 			abon.timeofDisconnect = 0;
-			abon.owner = this;
-			abon.setOnline = function(state) {
-				if (!state && abon.online) this.timeofDisconnect = Date.now();
-				abon.online = state;
+			if (newinstance) {
+				abon.queue = [];
+				abon.owner = this;
+				abon.setOnline = function(state) {
+					if (!state && abon.online) this.timeofDisconnect = Date.now();
+					abon.online = state;
+				}
+				this.abonents.push(abon);
 			}
-			this.abonents.push(abon);
 			return callback(null, abon);
 		}
 		catch(error) {
@@ -120,7 +120,6 @@ function Abonents(app) {
 			if (!abon) throw `abonent [${abon.id}] not found`;
 			var result = [];
 			const now = Date.now();
-			// temp solution: pass'n'delete messages without ack
 			for (msg of abon.queue) {
 				result.push({
 					srcId: msg.srcId,
@@ -129,7 +128,7 @@ function Abonents(app) {
 					payload: msg.payload
 				})
 			}
-			abon.queue = [];
+			abon.queue = [];	// temp solution
 			return callback(null, result);
 		}
 		catch(error) {
@@ -137,20 +136,21 @@ function Abonents(app) {
 		}
 	}
 	setInterval(() => {
-		for (index in this.abonents) {
+		for (var index = 0; index < this.abonents.length; index++) {
 			var abon = this.abonents[index];
 			if (abon.static || abon.online) continue;
 			if (abon.keepOffline && abon.keepOffline>Date.now()-abon.timeofDisconnect) {
 				continue;
 			}
-			console.log(`abonent ${abon.id} deleted by timeout`)
-			this.abonents.splice(index,1);			
+			console.log(`abonent ${abon.id} deleted by garbage collector`);
+			this.abonents.splice(index,1);
+			index--;
 		}
 		for (abon of this.abonents) {
 			if (abon.agent) abon.agent.trySend();
 		}		
 	}, 100)
-}
+};
 
 module.exports.Abonents = Abonents;
 
