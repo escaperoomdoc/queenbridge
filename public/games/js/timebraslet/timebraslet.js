@@ -32,7 +32,7 @@ var Frame = function() {
 	this.stageCreate = function() {
 		this.activeSprites = true;
 		this.bg.hackerProperty = "frame";
-//		app.stage.addChild(this.bg);
+		app.stage.addChild(this.bg);
 	}
 	this.stageClear = function() {
 		this.activeSprites = false;

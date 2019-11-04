@@ -69,8 +69,8 @@ function QueenBridge(host, options) {
 					}
 				}
 				catch(error) {
-					data = {type: 'receive', error: error};					
-					if (that.events['error']) that.events['error'](data);					
+					data = {type: 'receive', error: error};
+					if (that.events['error']) that.events['error'](data);
 				}
 			}
 			else
