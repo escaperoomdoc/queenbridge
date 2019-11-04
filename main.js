@@ -17,11 +17,11 @@ app.use(cors());
 games(app);
 app.use(express.static('public'));
 
-
+// start http server
 var httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => {});
 
-// init abonents
+// init abonents and topics
 app.queenbridge = {};
 app.queenbridge.httpServer = httpServer;
 app.queenbridge.config = config;
@@ -31,7 +31,7 @@ app.queenbridge.topics = new topics.Topics(app);
 // init queen abonents
 abonqueen(app);
 
-// init http api
+// init http api abonents
 abonhttp(app);
 
 // init socket io abonents
