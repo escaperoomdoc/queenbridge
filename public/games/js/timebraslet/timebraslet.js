@@ -1,7 +1,21 @@
 // init app
-qb = new QueenBridge(location.host, {id: 'timebraslet-'+gameParams, autoping: null});
+qb = new QueenBridge(location.host, {id: 'timebraslet-'+gameParams});
 var app = new PIXI.Application(1280, 720, { transparent: true });
 document.body.appendChild(app.view);
+
+const loader = new PIXI.loaders.Loader();
+loader.add('gill_sans_light', 'js/timebraslet/gill_sans_light.TTF');
+
+loader.load((loader, resources) => {
+	/*
+	PointsTopText = new Text(
+		 "P1:ADASDasdSD",
+		 {fontFamily: 'gill_sans_light', fontSize: 32, fill: 'black'}
+	);
+	app.stage.addChild(PointsTopText);
+	*/
+	var aaa = 0;
+});
 
 // screen size is constant
 const screenWidth = 1280;
@@ -18,7 +32,7 @@ var Frame = function() {
 	this.stageCreate = function() {
 		this.activeSprites = true;
 		this.bg.hackerProperty = "frame";
-		app.stage.addChild(this.bg);
+//		app.stage.addChild(this.bg);
 	}
 	this.stageClear = function() {
 		this.activeSprites = false;
@@ -76,6 +90,42 @@ var textTime = function(text) {
 		this.textSprite._style._fill[0] = ['#28ff20'];
 	}
 };
+
+var indiIcon = function(colorName, x, y, radius) {
+	colors = {};
+	colors['red'] = 0xFF0000;
+	colors['green'] = 0x00FF00;
+	colors['blue'] = 0x0000FF;
+	colors['yellow'] = 0xFFFF00;
+	colors['purple'] = 0xFF00FF;
+	colors['cyan'] = 0x00FFFF;
+	this.color = colors[colorName];
+	this.colorNow = this.color;
+	this.graphics = new PIXI.Graphics();
+	this.graphics.lineStyle(0);
+	this.graphics.beginFill(this.color, 1);
+	this.graphics.drawCircle(x, y, radius);
+	this.graphics.endFill();
+	this.stageCreate = function() {
+		this.activeSprites = true;
+		this.graphics.hackerProperty = "indi";
+		app.stage.addChild(this.graphics);
+	}
+	this.restoreColor = function() {
+		this.colorNow = this.color;
+	}
+	this.animate = function() {
+		this.colorNow = this.colorNow - (this.colorNow & 0xFF0000 ? 0x010000 : 0);
+		this.colorNow = this.colorNow - (this.colorNow & 0x00FF00 ? 0x000100 : 0);
+		this.colorNow = this.colorNow - (this.colorNow & 0x0000FF ? 0x000001 : 0);
+		this.graphics.clear();
+		this.graphics.lineStyle(0);
+		this.graphics.beginFill(this.colorNow, 1);
+		this.graphics.drawCircle(x, y, radius);
+		this.graphics.endFill();
+	}	
+}
+
 
 	/*
 	var Codes = function(codesArray, fixTimes) {
@@ -336,6 +386,9 @@ var textTime = function(text) {
 	// construction
 	frame = new Frame();
 	time = new textTime('2568∙12∙25 13∙45∙06');
+	pass = new textTime('0000∙00∙00 00∙00∙00');
+	indi = new indiIcon(gameParams, 80, 320, 50);
+	
 	/*
 	stick = new Stick();
 	securityVideo = new Video('assets/security.mp4', true);
@@ -348,11 +401,13 @@ var textTime = function(text) {
 	// frame is always on
 	frame.stageCreate();
 	time.stageCreate();
+	indi.stageCreate();
 
 	// timer event
 	app.ticker.add(function() {
 		frame.animate();
 		time.animate();
+		indi.animate();
 		/*
 		stick.animate();
 		firewall.animate();
@@ -364,6 +419,20 @@ var textTime = function(text) {
 /*
 }
 */
+
+qb.on('ping', (data) => {
+	indi.restoreColor();
+})
+
+qb.on('receive', (data) => {
+	try {
+		for (msg of data.msgs) {
+		}
+	}
+	catch(error) {
+	}
+})
+
 function onCommand(socket, text) {
 	/*
 	hackerStage.socket = socket;
