@@ -24,7 +24,7 @@ const screenHeight = 720;
 // create a new Sprite from an image path.
 var Frame = function() {
 	// init members
-	this.bg = PIXI.Sprite.fromImage('js/timebraslet/bg.jpg');
+	this.bg = PIXI.Sprite.fromImage('js/timebraslet/bg.png');
 	this.bg.anchor.set(0.5);
 	this.bg.x = screenWidth / 2;
 	this.bg.y = screenHeight / 2;
@@ -46,16 +46,16 @@ var Frame = function() {
 };
 
 var textStyleTime = new PIXI.TextStyle({
-	fontFamily: 'Candara',	//'Berlin Sans FB', 'Candara'
-	fontSize: 128,
+	fontFamily: 'Courier New',	//'Berlin Sans FB', 'Candara'
+	fontSize: 100,
 	fontStyle: 'normal',
 	fontWeight: 'normal',
 	fill: ['#28ff20']
 });
 
 var textStylePass = new PIXI.TextStyle({
-	fontFamily: 'Candara',	//'Berlin Sans FB', 'Candara'
-	fontSize: 128,
+	fontFamily: 'Courier New',
+	fontSize: 100,
 	fontStyle: 'normal',
 	fontWeight: 'normal',
 	fill: ['#ffff20']
