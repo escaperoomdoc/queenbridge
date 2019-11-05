@@ -9,15 +9,17 @@ module.exports = (app) => {
      	connections[socket.id] = socket;
      	// handle disconnect
      	socket.on('disconnect', (reason) => {
-   		console.log('io.on(disconnect) : ', socket.id, ' reason : ', reason );
+			var abonName = '';
 			if (connections[socket.id]) {
 				if (connections[socket.id].abon) {
 					connections[socket.id].abon.online = false;
 					connections[socket.id].abon.timeofDisconnect = Date.now();
+					abonName = ' [' + connections[socket.id].abon.id + ']';
 				}
 				delete connections[socket.id];
 			}
-      });
+			console.log('io.on(disconnect) : ', socket.id, abonName, ', reason - ', reason );
+		});
       // handle an error
       socket.on('error', (error) => {
       	console.log('io.on(error) : ', socket.id, ' error : ', error );
