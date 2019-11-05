@@ -55,7 +55,7 @@ String.prototype.padLeft = function (length, character) {
      return new Array(length - this.length + 1).join(character || '0') + this; 
 }
 
-var Time = function(time, style, x, y, gameProperty) {
+var Time = function(time, style, x, y, gameProperty, interactive) {
 	this.textSprite = new PIXI.Text('9999∙99∙99 99∙99∙99', style);
 	this.textSprite.x = x;
 	this.textSprite.y = y;
@@ -90,6 +90,38 @@ var Time = function(time, style, x, y, gameProperty) {
 		this.updateText();
 	}
 	this.setTime(time);
+	
+	this.pointInRect = function(x, y, l, t, w, h) {
+		if (x >= l && x <= l + w && y >= t && y <= t + h) return true;
+		return false;
+	}
+	if (interactive) {
+		this.textSprite.interactive = true;
+		this.textSprite.buttonMode = true;	
+		this.textSprite.on('pointertap', (event ) => {
+			if (this.pointInRect(event.data.global.x, event.data.global.y, 80, 500, 270, 120)) {
+				if (++this.time.years > 9999) this.time.years = 0;
+			}
+			if (this.pointInRect(event.data.global.x, event.data.global.y, 380, 500, 135, 120)) {
+				if (++this.time.months > 11) this.time.months = 0;
+			}
+			if (this.pointInRect(event.data.global.x, event.data.global.y, 550, 500, 135, 120)) {
+				if (++this.time.days > 29) this.time.days = 0;
+			}
+			if (this.pointInRect(event.data.global.x, event.data.global.y, 710, 500, 135, 120)) {
+				if (++this.time.hours > 23) this.time.hours = 0;
+			}
+			if (this.pointInRect(event.data.global.x, event.data.global.y, 880, 500, 135, 120)) {
+				if (++this.time.mins > 59) this.time.mins = 0;
+			}
+			if (this.pointInRect(event.data.global.x, event.data.global.y, 1050, 500, 135, 120)) {
+				if (++this.time.secs > 59) this.time.secs = 0;
+			}
+			value = 	this.time.secs + this.time.mins * 60 + this.time.hours * 3600 +
+						this.time.days * 86400 + this.time.months * 2592000 + this.time.years * 31104000;
+			this.setTime(value);
+		});	
+	}
 	this.activeSprites = false;
 	this.activate = function() {
 		this.activeSprites = true;
@@ -103,7 +135,7 @@ var Time = function(time, style, x, y, gameProperty) {
 		};	
 	}
 	this.animate = function() {
-	}
+	}	
 };
 
 var Text = function(text, style, x, y, gameProperty) {
@@ -258,13 +290,13 @@ var Arrow = function(x, y, gameProperty) {
 var items = {};
 items['frame'] = new Frame();
 items['indi'] = new indiIcon(gameParams, 120, 130, 40);
-items['zone'] = new Text('ожидание', textStyleZone, 300, 80, 'zone');
+items['zone'] = new Text('ЗАВОД', textStyleZone, 920, 85, 'zone');
 items['time'] = new Time(3600, textStyleTime, 80, 200, 'time');
 items['buttonPasschar'] = new Button( 80, 500, 'buttonPasschar');
 items['buttonPasstown'] = new Button(515, 500, 'buttonPasstown');
 items['buttonGiveclue'] = new Button(950, 500, 'buttonGiveclue');
 
-items['pass'] = new Time(0, textStylePass, 80, 500, 'pass');
+items['pass'] = new Time(0, textStylePass, 80, 500, 'pass', true);
 items['buttonOk'] = new Button(80, 350, 'buttonOk');
 items['buttonCancel'] = new Button(950, 350, 'buttonCancel');
 items['arrow'] = new Arrow(620, 400, 'arrow');
@@ -289,6 +321,7 @@ function buttonTap(buttonName) {
 		items['buttonOk'].activate();
 		items['buttonCancel'].activate();
 		items['arrow'].activate();
+		items['pass'].setTime(0);
 	}
 	if (buttonName === 'buttonOk' || buttonName === 'buttonCancel') {
 		items['buttonPasschar'].activate();
@@ -325,6 +358,6 @@ qb.on('receive', (data) => {
 
 setInterval(() => {
 	items['indi'].restoreColor();
-//	items['pass'].restoreColor();
 	items['arrow'].restoreColor();
 }, 1000 );
+
