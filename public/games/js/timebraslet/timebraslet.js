@@ -255,25 +255,50 @@ var Arrow = function(x, y, gameProperty) {
 	}	
 }
 
-function buttonTap(buttonName) {
-	console.log(buttonName);
-}
-
 var items = {};
 items['frame'] = new Frame();
-items['time'] = new Time(3600, textStyleTime, 80, 200, 'time');
-items['pass'] = new Time(0, textStylePass, 80, 500, 'pass');
 items['indi'] = new indiIcon(gameParams, 120, 130, 40);
 items['zone'] = new Text('ожидание', textStyleZone, 300, 80, 'zone');
-items['buttonOk'] = new Button(80, 350, 'buttonOk');
-items['buttonCancel'] = new Button(950, 350, 'buttonCancel');
+items['time'] = new Time(3600, textStyleTime, 80, 200, 'time');
 items['buttonPasschar'] = new Button( 80, 500, 'buttonPasschar');
 items['buttonPasstown'] = new Button(515, 500, 'buttonPasstown');
 items['buttonGiveclue'] = new Button(950, 500, 'buttonGiveclue');
+
+items['pass'] = new Time(0, textStylePass, 80, 500, 'pass');
+items['buttonOk'] = new Button(80, 350, 'buttonOk');
+items['buttonCancel'] = new Button(950, 350, 'buttonCancel');
 items['arrow'] = new Arrow(620, 400, 'arrow');
 
 for (item in items) {
-	items[item].activate();
+	items['frame'].activate();
+	items['indi'].activate();
+	items['zone'].activate();
+	items['time'].activate();
+	items['buttonPasschar'].activate();
+	items['buttonPasstown'].activate();
+	items['buttonGiveclue'].activate();
+}
+
+
+function buttonTap(buttonName) {
+	if (buttonName === 'buttonPasschar') {
+		items['buttonPasschar'].deactivate();
+		items['buttonPasstown'].deactivate();
+		items['buttonGiveclue'].deactivate();
+		items['pass'].activate();
+		items['buttonOk'].activate();
+		items['buttonCancel'].activate();
+		items['arrow'].activate();
+	}
+	if (buttonName === 'buttonOk' || buttonName === 'buttonCancel') {
+		items['buttonPasschar'].activate();
+		items['buttonPasstown'].activate();
+		items['buttonGiveclue'].activate();
+		items['pass'].deactivate();
+		items['buttonOk'].deactivate();
+		items['buttonCancel'].deactivate();
+		items['arrow'].deactivate();
+	}	
 }
 
 app.ticker.add(function() {
