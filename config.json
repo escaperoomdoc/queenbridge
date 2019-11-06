@@ -4,20 +4,16 @@
 	},
 	"abonqueen": [
 		{
-			"id": "room1",
+			"id": "room",
 			"host": "127.0.0.1",
 			"port": 4444,
 			"autopublish": {
-				"all": ["room1_events"]
+				"all": ["room_events"]
 			}
-		}, {
-			"id": "room2",
-			"host": "127.0.0.1",
-			"port": 4445
 		}
 	],
 	"topics": [{
-		"id": "room1_events",
-		"subscribers": ["siotest-557"]
+		"id": "room_events",
+		"subscribers": ["timebraslet-cyan", "asteroids"]
 	}]
 }

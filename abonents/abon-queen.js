@@ -157,7 +157,7 @@ function QueenClient(abon) {
 							}).finally(() => {
 							});
 						}
-						that.autopublish("json", content);
+						that.autopublish("json", json);
 					}
 					else {
 						if (abon.queue.length) {

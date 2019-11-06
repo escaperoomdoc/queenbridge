@@ -4,6 +4,15 @@ qb = new QueenBridge(location.host, {id: 'timebraslet-'+gameParams});
 var app = new PIXI.Application(screenWidth, screenHeight, { transparent: true });
 document.body.appendChild(app.view);
 
+colors = {};
+colors['red'] = 0xFF0000;
+colors['green'] = 0x00FF00;
+colors['blue'] = 0x0000FF;
+colors['yellow'] = 0xFFFF00;
+colors['purple'] = 0xFF00FF;
+colors['cyan'] = 0x00FFFF;
+colorNames=['red', 'green', 'blue', 'yellow', 'purple', 'cyan'];
+
 // create a new Sprite from an image path.
 var Frame = function() {
 	// init members
@@ -165,13 +174,6 @@ var Text = function(text, style, x, y, gameProperty) {
 }
 
 var indiIcon = function(colorName, x, y, radius) {
-	colors = {};
-	colors['red'] = 0xFF0000;
-	colors['green'] = 0x00FF00;
-	colors['blue'] = 0x0000FF;
-	colors['yellow'] = 0xFFFF00;
-	colors['purple'] = 0xFF00FF;
-	colors['cyan'] = 0x00FFFF;
 	this.color = colors[colorName];
 	this.colorNow = this.color;
 	this.graphics = new PIXI.Graphics();
@@ -211,9 +213,6 @@ var indiIcon = function(colorName, x, y, radius) {
 }
 
 var Button = function(x, y, gameProperty) {
-	this.onTap = function() {
-		console.log(123);
-	}
 	this.button = PIXI.Sprite.fromImage('js/timebraslet/' + gameProperty + '.png');
 	this.button.anchor.set(0);
 	this.button.x = x;
@@ -243,14 +242,17 @@ var Arrow = function(x, y, gameProperty) {
 	this.onTap = function() {
 		console.log(123);
 	}
-	this.color = 0x404040;
+	this.colorIndex = 0;
+	this.color = colors[colorNames[this.colorIndex]];
 	this.x = x;
 	this.y = y;
 	this.graphics = new PIXI.Graphics();
+	this.graphics.interactive = true;
+	this.graphics.buttonMode = true;	
 	this.colorNow = this.color;
 	this.draw = function() {
 		this.graphics.beginFill(this.colorNow);
-		this.graphics.lineStyle(4, this.color, 1);
+		this.graphics.lineStyle(4, this.colorNow, 1);
 		this.graphics.moveTo(this.x - 30, this.y - 50);
 		this.graphics.lineTo(this.x - 30, this.y + 20);
 		this.graphics.lineTo(this.x - 80, this.y + 20);
@@ -262,6 +264,12 @@ var Arrow = function(x, y, gameProperty) {
 		this.graphics.endFill();
 	}
 	this.draw();
+	this.graphics.on('pointertap', () => {
+		if (++this.colorIndex >= colorNames.length) this.colorIndex = 0;
+		this.color = colors[colorNames[this.colorIndex]];
+		this.colorNow = this.color;
+		this.draw();
+	});	
 	this.restoreColor = function() {
 		this.colorNow = this.color;
 		this.draw();
@@ -324,6 +332,9 @@ function buttonTap(buttonName) {
 		items['pass'].setTime(0);
 	}
 	if (buttonName === 'buttonOk' || buttonName === 'buttonCancel') {
+		if (buttonName === 'buttonOk') {
+			qb.send('timebraslet-' + colorNames[items['arrow'].colorIndex], {type: 'timepass', time: items['pass'].time.raw});
+		}
 		items['buttonPasschar'].activate();
 		items['buttonPasstown'].activate();
 		items['buttonGiveclue'].activate();
@@ -340,17 +351,24 @@ app.ticker.add(function() {
 	}
 });
 
-qb.on('ping', (data) => {	
+qb.on('ping', (data) => {
 })
 qb.on('connect', () => {
 })
 qb.on('disconnect', () => {
 })
 
-qb.on('receive', (data) => {
+qb.on('receive', (msg) => {
 	try {
-		for (msg of data.msgs) {
-		}
+		if (msg.payload ) {
+			if (msg.payload.type === 'timepass') {
+				items['time'].setTime(items['time'].time.raw + msg.payload.time);
+			}
+			if (msg.payload.type === 'json' && msg.payload.data && msg.payload.data.type === 'gadgettime') {
+				items['time'].setTime(items['time'].time.raw + parseInt(msg.payload.data.value));
+			}			
+		} 
+		
 	}
 	catch(error) {
 	}
