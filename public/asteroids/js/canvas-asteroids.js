@@ -1,3 +1,6 @@
+
+qb = new QueenBridge(location.host, {id: 'asteroids'});
+
 //common vars
 
 var canvas;
@@ -29,6 +32,19 @@ var keyUp = false;
 var keyRight = false;
 var keyDown = false;
 var keySpace = false;
+
+qb.send('room', 'set out.out_shuttle.state on');
+qb.on('receive', (msg) => {
+	try {
+		if (msg.payload ) {
+			if (msg.payload.type === 'json' && msg.payload.data && msg.payload.data.type === 'firebutton') {
+				keySpace = true;
+			}			
+		}		
+	}
+	catch(error) {
+	}
+})
 
 window.getAnimationFrame =
 window.requestAnimationFrame ||
@@ -211,6 +227,7 @@ function updateShip()
 	if(ship.idle) return;
 
 	if(keySpace) ship.shoot();
+	keySpace = false;
 	if(keyLeft) ship.angle -= 0.1;
 	if(keyRight) ship.angle += 0.1;
 
