@@ -7,36 +7,44 @@
 
 function QueenBridge(host, options) {
 	this.socket = null;
-	this.id = null;
 	this.queue = [];
 	this.events = {};
 	this.connected = false;
 	this.msgId = 0;
 	this.pending = 0;
+	this.register = {
+		id: null,
+		autoping: 1000,
+		keepOffline: 10000,
+		override: false
+	}
 	const that = this;
-	if (options) {
-		this.id = options.id;
+	this.handleRegisterOptions = function(options) {
+		if (!options) return;
+		this.register.id = options.id;
+		this.register.override = options.override;
 		// if autoping is not defined => autoping = 1000 by default
-		if (options.autoping) this.autoping = options.autoping;
-		else {
-			
-			if (options.autoping === null) this.autoping = null;
-			else this.autoping = 1000;
+		if (options.autoping === null || options.autoping >= 1000 && options.autoping <= 10000) {
+			this.register.autoping = options.autoping;
 		}
-		if (options.autoping) {
-			if (this.autoping < 100) this.autoping = 100;
-			if (this.autoping > 5000) this.autoping = 5000;
-		}
+		if (options.keepOffline === null || options.keepOffline) {
+			this.register.keepOffline = options.keepOffline;
+		}			
+	}
+	this.registerAbonent = function(options) {
+		this.handleRegisterOptions(options);
+		that.socket.emit('/api/register', this.register);
+		requestAbonents();
 	}
 	this.on = function(event, callback) {
 		this.events[event] = callback;
-	}	
+	}
 	function connect() {
 		that.socket = io.connect(host);
 		that.socket.on('connect', function() {
 			that.connected = true;
-			that.socket.emit('/api/register', {id: that.id});
 			if (that.events['connect']) that.events['connect']();
+			that.registerAbonent(options);
 		})
 		that.socket.on('disconnect', function() {
 			that.connected = false;
@@ -50,7 +58,7 @@ function QueenBridge(host, options) {
 		})
 		that.socket.on('/api/register', function(data) {
 			if (data.id) {
-				that.id = data.id;
+				that.register.id = data.id;
 				if (that.events['register']) that.events['register'](data);
 			}
 			if (data.error) {
@@ -94,10 +102,6 @@ function QueenBridge(host, options) {
 	this.requestAbonents = function() {
 		that.socket.emit('/api/abonents');
 	}
-	this.registerAbonent = function(id) {
-		that.socket.emit('/api/register', {id: id});
-		requestAbonents();
-	}	
 	this.send = function(id, payload, options) {
 		that.queue.push({
 			dstId: id,

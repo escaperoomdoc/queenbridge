@@ -31,7 +31,8 @@ function Abonents(app) {
 					queue: abon.queue.length,
 					alias: abon.alias,
 					status: abon.online ? "online" : "offline",
-					tola: abon.tola
+					keepOffline: abon.keepOffline,
+					timeOffline: abon.online ? 0 : Date.now() - abon.timeofDisconnect
 				})
 			}
 			return callback(null, result);
@@ -59,7 +60,7 @@ function Abonents(app) {
 			abon.id = data.id ? data.id : uuid();
 			abon.keepOffline = data.keepOffline ? data.keepOffline : null;
 			abon.online = false;
-			abon.timeofDisconnect = 0;
+			abon.timeofDisconnect = Date.now();
 			if (newinstance) {
 				abon.queue = [];
 				abon.owner = this;
@@ -72,6 +73,7 @@ function Abonents(app) {
 			return callback(null, abon);
 		}
 		catch(error) {
+			console.log(error);
 			return callback(error, null);
 		}
 	}

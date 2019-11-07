@@ -13,8 +13,12 @@
 		<br/><br/>
 		</div>
 		<div>
-		<label>id:</label>
+		<label>override:</label>		
+		<input type="checkbox" id="override" name="override">
+		<label>>>> id:</label>
 		<input type="text" size=16 name="" id="myid" value="siotest"/>
+		<label>keepOffline(ms):</label>
+		<input type="text" size=8 name="" id="keepOffline" value="5000"/>
 		<button onclick="registerAbonent();return false">reregister</button>
 		<br/><br/>
 		</div>
@@ -41,13 +45,19 @@
 	<script>
 		// init GUI objects
 		connectStatus = document.getElementById("connectStatus");
-		payload = document.getElementById("payload");
+		override = document.getElementById("override");
 		myid = document.getElementById("myid");
+		keepOffline = document.getElementById("keepOffline");
 		logger = document.getElementById("logger");
 		abonlist = document.getElementById("abonlist");
+		payload = document.getElementById("payload");
 		name = 'siotest-' + Math.floor(Math.random() * 1000);
 		// minimal required implementation:
-		qb = new QueenBridge(location.host, {id: name});
+		qb = new QueenBridge(location.host, {
+			id: name,
+			keepOffline: parseInt(keepOffline.value),
+			override: override.checked
+		});
 		qb.on('receive', function(data) {
 			logger.value += JSON.stringify(data);
 		});
@@ -65,7 +75,11 @@
 			connectStatus.innerHTML = 'server disconnected';
 		});
 		function registerAbonent() {
-			qb.registerAbonent(myid.value);
+			qb.registerAbonent({
+				id: myid.value,
+				keepOffline: parseInt(keepOffline.value),
+				override: override.checked
+			});
 		}
 		qb.on('ping', function(data) {
 			console.log('ping');

@@ -22,7 +22,7 @@ module.exports = (app) => {
 		});
       // handle an error
       socket.on('error', (error) => {
-      	console.log('io.on(error) : ', socket.id, ' error : ', error );
+      	console.log('io.on(error) : ', socket.id, ' error : ', error);
       });
       // handle API
       socket.on('/api/ping', (data) => {
@@ -42,20 +42,23 @@ module.exports = (app) => {
       socket.on('/api/register', (data) => {
       	try {
          	data.type = "sio";
-				data.override = true;
 				var prevAbon = connections[socket.id].abon;
 				if (prevAbon) {
 					app.queenbridge.abonents.unregister({id: prevAbon.id}, (error) => {
-						console.log(`reregistering abonent ${prevAbon.id} to ${data.id}...`);
 						if (error) console.log('unregister error: ' + error);
+						else {
+							console.log(`unregistering abonent ${prevAbon.id}...`);
+							delete connections[socket.id].abon;
+						}
 					})
 				}
-            app.queenbridge.abonents.register(data, (error, abon) => {
-             	if (error) throw error;
-              	socket.emit('/api/register', {id:abon.id});
+         	app.queenbridge.abonents.register(data, (error, abon) => {
+					if (error) throw error;
+					socket.emit('/api/register', {id: abon.id});
 					connections[socket.id].abon = abon;
 					abon.agent = connections[socket.id];
 					abon.online = true;
+					console.log(`registering new abonent ${abon.id}...`);
               	connections[socket.id].trySend = function() {
 						if (!abon.online || !abon.queue.length) return;
 						var params = {
