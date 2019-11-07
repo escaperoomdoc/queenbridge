@@ -1,5 +1,12 @@
 const uuid = require('uuidv4').default;
 
+function Abonent() {
+	this.setOnline = function(state) {
+		if (!state && this.online) this.timeofDisconnect = Date.now();
+		this.online = state;
+	}
+}
+
 function Abonents(app) {
 	this.app = app;
    this.abonents = [];
@@ -64,11 +71,8 @@ function Abonents(app) {
 			if (newinstance) {
 				abon.queue = [];
 				abon.owner = this;
-				abon.setOnline = function(state) {
-					if (!state && abon.online) this.timeofDisconnect = Date.now();
-					abon.online = state;
-				}
 				this.abonents.push(abon);
+				abon.__proto__ = new Abonent();
 			}
 			return callback(null, abon);
 		}

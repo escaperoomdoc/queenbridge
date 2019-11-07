@@ -208,11 +208,6 @@ function QueenClient(abon) {
 		if (msg.options && msg.options.ack) msg.pending = true;
 		else abon.queue.shift();
 	}
-	// autopublish
-	this.autopublish = function(type, data) {
-		if (abon.config.autopublish[type]) this.publish(abon.config.autopublish[type], type, data);
-		if (abon.config.autopublish["all"]) this.publish(abon.config.autopublish["all"], type, data);
-	}
 	this.publish = function(topics, type, data) {
 		try {
 			for (topic of topics) {
@@ -234,6 +229,10 @@ function QueenClient(abon) {
 		catch(error) {
 			console.log("error on abonqueen publish: " + error);
 		}
+	}
+	this.autopublish = function(type, data) {
+		if (abon.config.autopublish[type]) this.publish(abon.config.autopublish[type], type, data);
+		if (abon.config.autopublish["all"]) this.publish(abon.config.autopublish["all"], type, data);
 	}
 }
 

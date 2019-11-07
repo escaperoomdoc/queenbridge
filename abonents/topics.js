@@ -1,7 +1,17 @@
 
+function Topic(owner, data) {
+	this.owner = owner;
+	this.id = data.id;
+	this.subscribers = data.subscribers ? data.subscribers : [];
+}
+
 function Topics(app) {
 	this.app = app;
-	this.topics = app.queenbridge.config.topics ? app.queenbridge.config.topics : [];
+	this.topics = [];
+	for (cfg of app.queenbridge.config.topics) {
+		var topic = new Topic(this, cfg);
+		this.topics.push(topic);
+	}
 	this.get = function(id) {
 		if (id) {
 			for (topic of this.topics) {
@@ -37,10 +47,9 @@ function Topics(app) {
 		try {
 			var topic = this.get(data.topic);
 			if (topic) throw "topic already exists"
-			this.topics.push({
-				id: data.topic,
-				subscribers: data.subscribers ? data.subscribers : []
-			});
+			data.id = data.topic;
+			var topic = new Topic(this, data);
+			this.topics.push(topic);
 			return callback(null);
 		}
 		catch(error) {
