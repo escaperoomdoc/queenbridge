@@ -8,9 +8,11 @@ function Topic(owner, data) {
 function Topics(app) {
 	this.app = app;
 	this.topics = [];
-	for (cfg of app.queenbridge.config.topics) {
-		var topic = new Topic(this, cfg);
-		this.topics.push(topic);
+	if (app.queenbridge.config.topics) {
+		for (cfg of app.queenbridge.config.topics) {
+			var topic = new Topic(this, cfg);
+			this.topics.push(topic);
+		}
 	}
 	this.get = function(id) {
 		if (id) {
