@@ -19,7 +19,7 @@ app.use(express.static('public'));
 
 // start http server
 var httpServer = http.createServer(app);
-httpServer.listen(httpPort, () => {});
+httpServer.listen(config.settings.httpPort, () => {});
 
 // init abonents and topics
 app.queenbridge = {};
@@ -37,4 +37,5 @@ abonhttp(app);
 // init socket io abonents
 abonsio(app);
 
-console.log("queen bridge started...");
+console.log(`queen bridge started on ${config.settings.httpPort}...`);
+

@@ -1,6 +1,7 @@
 {
 	"settings": {
-		"queueSizeLimit": 1024
+		"queueSizeLimit": 1024,
+		"httpPort": 8080
 	},
 	"abonqueen": [
 		{
@@ -11,9 +12,5 @@
 				"all": ["room_events"]
 			}
 		}
-	],
-	"topics": [{
-		"id": "room_events",
-		"subscribers": ["timebraslet-cyan", "asteroids"]
-	}]
+	]
 }
