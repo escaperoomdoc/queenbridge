@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"/>
+	<title>queen bridge sio test</title>
+	<script type="text/javascript" src="/js/socket.io.dev.js"></script>
+	<script type="text/javascript" src="/js/queenbridge.js"></script>
+</head>
+<body style='overflow: hidden'>
+	<form action="/login" method="post">
+		<div>
+		<label id="connectStatus" style="color: red">server disconnected</label>
+		<br/><br/>
+		</div>
+		<div>
+		<label>override:</label>		
+		<input type="checkbox" id="override" name="override">
+		<label>>>> id:</label>
+		<input type="text" size=16 name="" id="myid" value="siotest"/>
+		<label>keepOffline(ms):</label>
+		<input type="text" size=8 name="" id="keepOffline" value="5000"/>
+		<button onclick="registerAbonent();return false">reregister</button>
+		<br/><br/>
+		</div>
+		<div>
+		<label id="registerStatus" style="color: black">server unregistered</label>
+		<br/><br/>
+		</div>
+		<div>
+		<label>send to id</label>
+		<select id="abonlist"></select>
+		<button onclick="requestAbonents();return false">refresh</button>
+		<br/><br/>
+		</div>
+		<div>
+		<label>payload</label>
+		<input type="text" size=40 name="" id="payload" value="{'data':'empty'}"/>
+		<button onclick="sendMessage();return false">send</button>
+		<br/><br/>
+		</div>
+		<div>
+		<textarea id="logger" cols="80" rows="10"></textarea>
+		</div>
+	</form>	
+	<script>
+		// init GUI objects
+		connectStatus = document.getElementById("connectStatus");
+		override = document.getElementById("override");
+		myid = document.getElementById("myid");
+		keepOffline = document.getElementById("keepOffline");
+		logger = document.getElementById("logger");
+		abonlist = document.getElementById("abonlist");
+		payload = document.getElementById("payload");
+		name = 'siotest-' + Math.floor(Math.random() * 1000);
+		// minimal required implementation:
+		qb = new QueenBridge(location.host, {
+			id: name,
+			keepOffline: parseInt(keepOffline.value),
+			override: override.checked
+		});
+		qb.on('receive', function(data) {
+			logger.value += JSON.stringify(data);
+		});
+		function sendMessage() {
+			qb.send(abonlist.value, payload.value);
+		}
+		// routing layer:
+		// optional:
+		qb.on('connect', function() {
+			connectStatus.style.color = 'green';
+			connectStatus.innerHTML = 'server connected';
+		});
+		qb.on('disconnect', function() {
+			connectStatus.style.color = 'red';
+			connectStatus.innerHTML = 'server disconnected';
+		});
+		function registerAbonent() {
+			qb.registerAbonent({
+				id: myid.value,
+				keepOffline: parseInt(keepOffline.value),
+				override: override.checked
+			});
+		}
+		qb.on('ping', function(data) {
+			console.log('ping');
+		});		
+		function requestAbonents() {
+			qb.requestAbonents();
+		}		
+		qb.on('abonents', function(data) {
+			while(abonlist.length>0) {
+				abonlist.remove(0);
+			}
+			for (abon of data.abonents) {
+				var option = document.createElement("option");
+				option.text = abon.id;
+				abonlist.add(option);
+			}			
+		});
+		qb.on('register', function(data) {
+			registerStatus.style.color = 'blue';
+			registerStatus.innerHTML = 'server registered as: ' + data.id;
+			myid.value = data.id;
+		});		
+		qb.on('error', function(error) {
+			if (error.type === 'register') {
+				registerStatus.style.color = 'red';
+				registerStatus.innerHTML = 'server unregistered: ' + data.error;			
+			}
+			console.log(error.type + ' : ' + error.error);
+		});
+		qb.requestAbonents();
+	</script>
+	
+</body>
+</html>
