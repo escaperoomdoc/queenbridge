@@ -1,11 +1,11 @@
 qb = new QueenBridge(location.host, {autoping: null});
-var app = new PIXI.Application(1920, 1080, { transparent: true });
+var app = new PIXI.Application(1280, 720, { transparent: true });
 document.body.appendChild(app.view);
 
 // text style is constant
 var tsHead = new PIXI.TextStyle({
 	fontFamily: 'Lucidia Console',
-	fontSize: 48,
+	fontSize: 40,
 	fontStyle: 'normal',
 	fontWeight: 'normal',
 	fill: ['#000000'],
@@ -34,8 +34,8 @@ statsValue = new InfoText("-", tsHead, 200, 70);
 distInfo = [];
 distValue = [];
 for (var i=0; i<10; i++) {
-	distInfo.push(new InfoText(`${i*100}-${(i+1)*100} ms:`, tsHead, 10, 150 + i * 60))
-	distValue.push(new InfoText("0 (0%)", tsHead, 350, 150 + i * 60))
+	distInfo.push(new InfoText(`${i*100}-${(i+1)*100} ms:`, tsHead, 10, 150 + i * 50))
+	distValue.push(new InfoText("0 (0%)", tsHead, 350, 150 + i * 50))
 	distValue[i].pingCount = 0;
 }
 

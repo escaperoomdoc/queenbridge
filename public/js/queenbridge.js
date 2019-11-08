@@ -122,10 +122,10 @@ function QueenBridge(host, options) {
 	setInterval(function() {
 		that.transfer();
 	}, 100);
-	if (this.autoping) {
+	if (this.register.autoping) {
 		setInterval(function() {
 			that.socket.emit('/api/ping');
-		}, this.autoping)
+		}, this.register.autoping)
 	}
 }
 

@@ -52,6 +52,7 @@
 		abonlist = document.getElementById("abonlist");
 		payload = document.getElementById("payload");
 		name = 'siotest-' + Math.floor(Math.random() * 1000);
+		var connectColorFilp = false;
 		// minimal required implementation:
 		qb = new QueenBridge(location.host, {
 			id: name,
@@ -82,7 +83,16 @@
 			});
 		}
 		qb.on('ping', function(data) {
-			console.log('ping');
+			if (qb.connected) {
+				if (connectColorFilp) {
+					connectColorFilp = false;
+					connectStatus.style.color = 'lime';
+				}
+				else {
+					connectColorFilp = true;
+					connectStatus.style.color = 'green';
+				}
+			}			
 		});		
 		function requestAbonents() {
 			qb.requestAbonents();
