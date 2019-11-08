@@ -31,10 +31,13 @@ function QueenBridge(host, options) {
 			this.register.keepOffline = options.keepOffline;
 		}			
 	}
+	this.requestAbonents = function() {
+		that.socket.emit('/api/abonents');
+	}
 	this.registerAbonent = function(options) {
 		this.handleRegisterOptions(options);
 		that.socket.emit('/api/register', this.register);
-		requestAbonents();
+		this.requestAbonents();
 	}
 	this.on = function(event, callback) {
 		this.events[event] = callback;
@@ -98,9 +101,6 @@ function QueenBridge(host, options) {
 			that.queue = []; // replace with the code below later...
 			//that.pending = that.queue.length;
 		}		
-	}
-	this.requestAbonents = function() {
-		that.socket.emit('/api/abonents');
 	}
 	this.send = function(id, payload, options) {
 		that.queue.push({

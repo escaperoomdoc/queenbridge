@@ -1,4 +1,4 @@
-qb = new QueenBridge(location.host, {id: name, autoping: null});
+qb = new QueenBridge(location.host, {autoping: null});
 var app = new PIXI.Application(1920, 1080, { transparent: true });
 document.body.appendChild(app.view);
 
