@@ -245,7 +245,8 @@ module.exports = (app) => {
 		console.log('tcp connection established from: ' + id);
 		app.queenbridge.abonents.register({
 			type: "queen",
-			id: id
+			id: id,
+			keepOffline: 5000
 		}, (error, abon) => {
 			if (error) {
 				console.log('error on abonent register : ' + error);
