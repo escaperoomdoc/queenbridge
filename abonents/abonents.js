@@ -4,9 +4,15 @@ function Abonent() {
 	this.setOnline = function(state) {
 		if (!state && this.online) this.timeofDisconnect = Date.now();
 		this.online = state;
+		this.agent = null;
 	}
+	this.rename = function(id) {
+		var exists = this.owner.get(id);
+		if (exists && exists !== this) return false;
+		this.id = id;
+		return true;
+	}	
 }
-
 function Abonents(app) {
 	this.app = app;
    this.abonents = [];
@@ -34,7 +40,6 @@ function Abonents(app) {
 				result.push({
 					id: abon.id,
 					type: abon.type,
-					static: abon.static,
 					queue: abon.queue.length,
 					alias: abon.alias,
 					status: abon.online ? "online" : "offline",
@@ -56,10 +61,7 @@ function Abonents(app) {
 				var index = this.getIndex(data.id);
 				if (index>=0) {
 					abon = this.abonents[index];
-					var overridable = true;
-					if (abon.online) overridable = false;
-					if (abon.static) overridable = false;
-					if (overridable && data.override) newinstance = false;
+					if (!abon.online && data.override) newinstance = false;
 					else throw `abonent [${data.id}] already exists`;
 				}
 			}			
@@ -85,7 +87,6 @@ function Abonents(app) {
 		try {
 			var index = this.getIndex(data.id);
 			if (index<0) throw `abonent [${data.id}] not found`;
-			if (this.abonents[index].static) throw `cannot delete static abonent`;
 			this.abonents.splice(index,1);
 			return callback(null);
 		}
@@ -146,7 +147,7 @@ function Abonents(app) {
 	setInterval(() => {
 		for (var index = 0; index < this.abonents.length; index++) {
 			var abon = this.abonents[index];
-			if (abon.static || abon.online) continue;
+			if (abon.online) continue;
 			if (abon.keepOffline && abon.keepOffline>Date.now()-abon.timeofDisconnect) {
 				continue;
 			}

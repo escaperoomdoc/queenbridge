@@ -1,25 +1,22 @@
 
 const xmlparse = require('xml-parser');
-const net = require('net');
 const axios = require('axios');
 
+const net = require('net');
+var sockets = {};
+
 function QueenClient(abon) {
-	this.client = new net.Socket();
+	this.socket = abon.socket;
 	this.abon = abon;
 	this.connected = false;
 	this.stream = "";
 	this.scripts = {};
 	this.io = {};
 	this.state = {};
-	this.abon.setOnline(false);
+	this.abon.setOnline(true);
 	var that = this;
-	// queen room connect event
-	this.client.on('connect', () => {
-		this.abon.setOnline(true);
-		console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} connected`);
-	})
 	// queen room receive event
-	this.client.on('data', function(chunk) {
+	this.socket.on('data', function(chunk) {
 		try {
 			// try parse message
 			var str = chunk.toString('utf8');
@@ -36,12 +33,25 @@ function QueenClient(abon) {
 				try {
 					// try handle message
 					if (obj.attributes.type === "connected") {
-						that.client.write("setname queenbridge\n");
-						that.client.write("subscribe\n");
-						that.client.write("getscripts\n");
-						that.client.write("getlanguage\n");
-						that.client.write("getstates\n");
-						that.client.write("getmode\n");
+						that.socket.write("setname queenbridge\n");
+						that.socket.write("subscribe\n");
+						that.socket.write("getscripts\n");
+						that.socket.write("getlanguage\n");
+						that.socket.write("getstates\n");
+						that.socket.write("getmode\n");
+						if (obj.attributes.name) {
+							prevId = that.abon.id;
+							if (that.abon.rename(obj.attributes.name)) {
+								console.log(`queen room "${prevId}" introduced as "${that.abon.id}"`);
+								queenroomCfg = that.abon.owner.app.queenbridge.config.queenroom;
+								if (queenroomCfg && queenroomCfg[that.abon.id]) {
+									that.autopublishTopic = queenroomCfg[that.abon.id].autopublish;
+								}
+							}
+							else {
+								console.log(`error on renaming queen room "${prevId}" to "${obj.attributes.name}"`)
+							}
+						}
 					}
 					else
 					if (obj.attributes.type === "getscripts") {
@@ -179,23 +189,12 @@ function QueenClient(abon) {
 			console.log('parse error : ' + error);
 		}
 	});
-	// queen room disconnect or connect failure event
-	this.client.on('close', function() {
-		if (that.abon.online) {
-			console.log(`queen room ${that.abon.config.host}:${that.abon.config.port} disconnected`);
-		}
-		that.abon.setOnline(false);
-		setTimeout(() => {
-			that.client.connect({ port: that.abon.config.port, host: that.abon.config.host })
-		}, 1000);
-	});
-	this.client.on('error', (err) => {
-		//	console.log('TCP error : ' + err.stack)
-	});
-	this.client.connect({ port: that.abon.config.port, host: that.abon.config.host });
+	this.socket.on('error', (err) => {
+		console.log('TCP error : ' + err.stack)
+	});	
 	// send function
 	this.send = function(data) {
-		this.client.write(data+"\n");
+		this.socket.write(data+"\n");
 	}
 	// agent interface
 	this.trySend = function() {
@@ -231,25 +230,41 @@ function QueenClient(abon) {
 		}
 	}
 	this.autopublish = function(type, data) {
-		if (abon.config.autopublish[type]) this.publish(abon.config.autopublish[type], type, data);
-		if (abon.config.autopublish["all"]) this.publish(abon.config.autopublish["all"], type, data);
+		console.log({type: type, data: data});
+		if (this.autopublishTopic) {
+			this.publish(this.autopublishTopic, type, data);
+		}
 	}
 }
 
 module.exports = (app) => {
-	for (cfg of app.queenbridge.config.abonqueen) {
+	net.createServer(function(socket) {
+		var id = socket.remoteAddress + ':' + socket.remotePort;
+		sockets[id] = socket;
+		socket.socketId = id;
+		console.log('tcp connection established from: ' + id);
 		app.queenbridge.abonents.register({
 			type: "queen",
-			id: cfg.id,
-			config: cfg
+			id: id
 		}, (error, abon) => {
 			if (error) {
-				console.log('error on abonent this.register : ' + error);
+				console.log('error on abonent register : ' + error);
 				return;
 			}
-			abon.config = cfg;
-			abon.static = true;
+			abon.socket = socket;
+			socket.abon = abon;
 			abon.agent = new QueenClient(abon);
 		});
-	}	
+		// queen room disconnect or connect failure event
+		socket.on('close', function() {
+			try {
+				socket.abon.setOnline(false);
+				console.log(`queen room "${socket.socketId}" (${socket.abon.id}) disconnected`);
+				delete sockets[socket.id];
+			}
+			catch(error) {
+				console.log('error on socket.on(close): ' + error);
+			}
+		});
+	}).listen(app.queenbridge.config.settings.tcpPort, '0.0.0.0');
 }

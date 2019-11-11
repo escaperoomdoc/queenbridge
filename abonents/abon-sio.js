@@ -12,8 +12,7 @@ module.exports = (app) => {
 			var abonName = '';
 			if (connections[socket.id]) {
 				if (connections[socket.id].abon) {
-					connections[socket.id].abon.online = false;
-					connections[socket.id].abon.timeofDisconnect = Date.now();
+					connections[socket.id].abon.setOnline(false);
 					abonName = ' [' + connections[socket.id].abon.id + ']';
 				}
 				delete connections[socket.id];

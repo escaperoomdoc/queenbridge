@@ -1,16 +1,16 @@
 {
 	"settings": {
 		"queueSizeLimit": 1024,
-		"httpPort": 8080
+		"httpPort": 8080,
+		"tcpPort": 4440
 	},
-	"abonqueen": [
-		{
-			"id": "room",
-			"host": "127.0.0.1",
-			"port": 4444,
-			"autopublish": {
-				"all": ["room_events"]
-			}
+	"topics": [{
+		"id": "room/autopublish",
+		"subscribers": ["siotest-1"]
+	}],
+	"queenroom": {
+		"servertest": {
+			"autopublish": ["room/autopublish"]
 		}
-	]
+	}
 }
