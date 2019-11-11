@@ -1,8 +1,8 @@
 {
 	"settings": {
 		"queueSizeLimit": 1024,
-		"httpPort": 8080,
-		"tcpPort": 4440
+		"httpPort": 3030,
+		"tcpPort": 3333
 	},
 	"topics": [{
 		"id": "room/autopublish",
