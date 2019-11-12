@@ -36,6 +36,16 @@
 		<label>payload</label>
 		<input type="text" size=40 name="" id="payload" value="{'data':'empty'}"/>
 		<button onclick="sendMessage();return false">send</button>
+		<button onclick="publishMessage();return false">publish</button>
+		<br/><br/>
+		</div>
+		<div>
+		<label>topic</label>
+		<input type="text" size=40 name="" id="topic" value="/test/topic1"/>
+		<button onclick="topicMessage();return false">topic</button>
+		<button onclick="untopicMessage();return false">untopic</button>
+		<button onclick="subscribeMessage();return false">subscribe</button>
+		<button onclick="unsubscribeMessage();return false">unsubscribe</button>
 		<br/><br/>
 		</div>
 		<div>
@@ -51,6 +61,7 @@
 		logger = document.getElementById("logger");
 		abonlist = document.getElementById("abonlist");
 		payload = document.getElementById("payload");
+		topic = document.getElementById("topic");		
 		name = 'siotest-' + Math.floor(Math.random() * 1000);
 		var connectColorFilp = false;
 		// minimal required implementation:
@@ -66,6 +77,21 @@
 			qb.send(abonlist.value, payload.value);
 		}
 		// routing layer:
+		function topicMessage() {
+			qb.topic(topic.value);
+		}
+		function untopicMessage() {
+			qb.untopic(topic.value);
+		}
+		function subscribeMessage() {
+			qb.subscribe(topic.value);
+		}
+		function unsubscribeMessage() {
+			qb.unsubscribe(topic.value);
+		}
+		function publishMessage() {
+			qb.publish(topic.value, payload.value);
+		}			
 		// optional:
 		qb.on('connect', function() {
 			connectStatus.style.color = 'green';

@@ -62,7 +62,7 @@ module.exports = (app) => {
 			});			
 		}
 		catch(error) {
-			return res.status(400).json({error: 'post /api/receive: ' + error});
+			return res.status(400).json({error: 'get /api/receive: ' + error});
 		}
 	})
 	app.get('/api/topics', async (req, res, next) => {
@@ -73,9 +73,64 @@ module.exports = (app) => {
 			});
 		}
 		catch(error) {
-			return res.status(400).json({error: 'post /api/receive: ' + error});
+			return res.status(400).json({error: 'get /api/topics: ' + error});
 		}
-	})	
+	})
+	app.post('/api/topic', async (req, res, next) => {
+		try {
+			app.queenbridge.topics.topic(req.body, (error) => {
+				if (error) throw error;
+				res.status(200).json({});
+			});
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/topic: ' + error});
+		}
+	})
+	app.post('/api/untopic', async (req, res, next) => {
+		try {
+			app.queenbridge.topics.untopic(req.body, (error) => {
+				if (error) throw error;
+				res.status(200).json({});
+			});
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/untopic: ' + error});
+		}
+	})
+	app.post('/api/subscribe', async (req, res, next) => {
+		try {
+			app.queenbridge.topics.subscribe(req.body, (error) => {
+				if (error) throw error;
+				res.status(200).json({});
+			});
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/subscribe: ' + error});
+		}
+	})
+	app.post('/api/unsubscribe', async (req, res, next) => {
+		try {
+			app.queenbridge.topics.unsubscribe(req.body, (error) => {
+				if (error) throw error;
+				res.status(200).json({});
+			});
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/unsubscribe: ' + error});
+		}
+	})
+	app.post('/api/publish', async (req, res, next) => {
+		try {
+			app.queenbridge.topics.publish(req.body, (error) => {
+				if (error) throw error;
+				res.status(200).json({});
+			});
+		}
+		catch(error) {
+			return res.status(400).json({error: 'post /api/publish: ' + error});
+		}
+	})
 	app.all('*', async (req, res, next) => {
 		res.status(400).json({error: 'not implemented yet'});
 	})

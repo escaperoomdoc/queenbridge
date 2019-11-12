@@ -73,6 +73,7 @@ function Topics(app) {
 		try {
 			var topic = this.get(data.topic);
 			if (!topic) throw "topic not found";
+			if (topic.subscribers.includes(data.id)) throw "subscriber already exists";
 			topic.subscribers.push(data.id);
 			return callback(null);
 		}

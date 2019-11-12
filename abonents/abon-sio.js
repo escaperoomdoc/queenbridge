@@ -89,19 +89,78 @@ module.exports = (app) => {
          }
       });
 		socket.on('/api/send', (data) => {
+			try {
+				data.id = connections[socket.id].abon ? connections[socket.id].abon.id : null;
+				app.queenbridge.abonents.send(data, (error, report) => {
+					if (error) throw error;
+					socket.emit('/api/send', report);
+				});
+			}
+			catch(error) {
+				socket.emit('/api/send', {error: error});
+			}
+		});
+		socket.on('/api/receive', (data) => {
+			console.log('response on receive');
+		});
+		socket.on('/api/topic', (data) => {
       	try {
-      		app.queenbridge.abonents.send(data, (error, report) => {
+      		app.queenbridge.topics.topic(data, (error) => {
             	if (error) throw error;
-            	socket.emit('/api/send', report);
+            	socket.emit('/api/topic', report);
       		});
       	}
       	catch(error) {
-      		socket.emit('/api/send', {error: error});
+      		socket.emit('/api/topic', {error: error});
+         }
+		});
+		socket.on('/api/untopic', (data) => {
+      	try {
+      		app.queenbridge.topics.untopic(data, (error) => {
+            	if (error) throw error;
+            	socket.emit('/api/untopic', report);
+      		});
+      	}
+      	catch(error) {
+      		socket.emit('/api/untopic', {error: error});
+         }
+		});
+		socket.on('/api/subscribe', (data) => {
+      	try {
+				data.id = connections[socket.id].abon ? connections[socket.id].abon.id : null;
+      		app.queenbridge.topics.subscribe(data, (error) => {
+            	if (error) throw error;
+            	socket.emit('/api/subscribe', report);
+      		});
+      	}
+      	catch(error) {
+      		socket.emit('/api/subscribe', {error: error});
+         }
+		});
+		socket.on('/api/unsubscribe', (data) => {
+      	try {
+				data.id = connections[socket.id].abon ? connections[socket.id].abon.id : null;
+      		app.queenbridge.topics.unsubscribe(data, (error) => {
+            	if (error) throw error;
+            	socket.emit('/api/unsubscribe', report);
+      		});
+      	}
+      	catch(error) {
+      		socket.emit('/api/unsubscribe', {error: error});
+         }
+		});
+		socket.on('/api/publish', (data) => {
+      	try {
+				data.id = connections[socket.id].abon ? connections[socket.id].abon.id : null;
+      		app.queenbridge.topics.publish(data, (error) => {
+            	if (error) throw error;
+            	socket.emit('/api/publish', report);
+      		});
+      	}
+      	catch(error) {
+      		socket.emit('/api/publish', {error: error});
          }
    	});
-   	socket.on('/api/receive', (data) => {
-   		console.log('response on receive');
-   	});        
 	});
 }
 

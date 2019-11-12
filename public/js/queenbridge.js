@@ -7,11 +7,15 @@
 
 function QueenBridge(host, options) {
 	this.socket = null;
-	this.queue = [];
+	this.queue = {
+		send: [],
+		publish: []
+	}
+	this.sendPending = 0;
+	this.publishPending = 0;
 	this.events = {};
 	this.connected = false;
 	this.msgId = 0;
-	this.pending = 0;
 	this.register = {
 		id: null,
 		autoping: 1000,
@@ -90,20 +94,43 @@ function QueenBridge(host, options) {
 			}
 		})
 		that.socket.on('/api/send', function(data) {
-			if (that.pending>0 && that.queue.length>=that.pending) {
-				that.queue.splice(0, that.pending);
+			if (that.sendPending > 0 && that.queue.send.length >= that.sendPending) {
+				that.queue.send.splice(0, that.sendPending);
 			}
 		})
+		that.socket.on('/api/publish', function(data) {
+			if (that.publishPending > 0 && that.queue.publish.length >= that.publishPending) {
+				that.queue.publish.splice(0, that.publishPending);
+			}
+		})		
+		that.socket.on('/api/topic', function() {
+			if (that.events['topic']) that.events['topic']();
+		})
+		that.socket.on('/api/untopic', function() {
+			if (that.events['untopic']) that.events['untopic']();
+		})
+		that.socket.on('/api/subscribe', function() {
+			if (that.events['subscribe']) that.events['subscribe']();
+		})
+		that.socket.on('/api/unsubscribe', function() {
+			if (that.events['unsubscribe']) that.events['unsubscribe']();
+		})
+
 	}
 	this.transfer = function() {
-		if (that.connected && that.queue.length>0 && that.pending===0) {
-			that.socket.emit('/api/send', {msgs: that.queue});
-			that.queue = []; // replace with the code below later...
-			//that.pending = that.queue.length;
-		}		
+		if (that.connected && that.queue.send.length>0 && that.sendPending===0) {
+			that.socket.emit('/api/send', {msgs: that.queue.send});
+			that.queue.send = []; // replace with the code below later...
+			//that.sendPending = that.queue.send.length;
+		}
+		if (that.connected && that.queue.publish.length>0 && that.publishPending===0) {
+			that.socket.emit('/api/publish', {msgs: that.queue.publish});
+			that.queue.publish = []; // replace with the code below later...
+			//that.publishPending = that.queue.publish.length;
+		}	
 	}
 	this.send = function(id, payload, options) {
-		that.queue.push({
+		that.queue.send.push({
 			dstId: id,
 			msgId: ++that.msgId,
 			payload: payload,
@@ -112,7 +139,32 @@ function QueenBridge(host, options) {
 		this.transfer();
 	}
 	this.sendbulk = function(data) {
-		that.queue.concat(data.msgs);
+		that.queue.send.concat(data.msgs);
+		this.transfer();
+	}
+	this.topic = function(topic) {
+		that.socket.emit('/api/topic', {topic: topic});
+	}
+	this.untopic = function(topic) {
+		that.socket.emit('/api/untopic', {topic: topic});
+	}
+	this.subscribe = function(topic) {
+		that.socket.emit('/api/subscribe', {topic: topic});
+	}
+	this.unsubscribe = function(topic) {
+		that.socket.emit('/api/unsubscribe', {topic: topic});
+	}	
+	this.publish = function(topic, payload, options) {
+		that.queue.publish.push({
+			topic: topic,
+			msgId: ++that.msgId,
+			payload: payload,
+			options: options ? options : null
+		});
+		this.transfer();		
+	}
+	this.publishbulk = function(data) {
+		that.queue.publish.concat(data.msgs);
 		this.transfer();
 	}
 	this.ping = function(id) {
